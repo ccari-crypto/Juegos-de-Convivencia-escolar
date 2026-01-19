@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Convivencia - Versión Final RTDB</title>
+    <title>Sistema Convivencia - Versión Final RTDB Sincronizada</title>
     
     <!-- Firebase SDK para RTDB -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1379,6 +1379,7 @@
                         <div style="margin-top: 10px;">
                             <button id="btn-sincronizar-ahora" class="btn-small">🔄 Sincronizar Ahora</button>
                             <button id="btn-forzar-subida" class="btn-small btn-secondary">📤 Forzar Subida</button>
+                            <button id="btn-forzar-descarga" class="btn-small btn-warning">📥 Forzar Descarga</button>
                         </div>
                     </div>
                 </div>
@@ -1711,7 +1712,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN FIREBASE (SIMPLIFICADA PARA PRUEBAS)
+        // CONFIGURACIÓN FIREBASE
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1G0UGc2iHVH-db7HNLI8T9u7Y1aqSD44",
@@ -1729,6 +1730,7 @@
         let firebaseInitialized = false;
         let isOnline = false;
         let syncInProgress = false;
+        let isSyncing = false;
 
         // ============================================
         // CONFIGURACIÓN DEL SISTEMA
@@ -1853,6 +1855,7 @@
                     if (datos.estudiantes) sistema.estudiantes = datos.estudiantes;
                     if (datos.registros) sistema.registros = datos.registros;
                     if (datos.semanaActual) sistema.semanaActual = datos.semanaActual;
+                    if (datos.mediadores) sistema.mediadores = datos.mediadores;
                     
                     console.log("📂 Datos cargados de localStorage");
                     
@@ -1879,7 +1882,132 @@
         }
 
         // ============================================
-        // FUNCIONES PARA LOGOS - CORREGIDAS
+        // FUNCIONES DE SINCRONIZACIÓN CON FIREBASE
+        // ============================================
+        async function sincronizarConFirebase() {
+            if (!firebaseInitialized || !isOnline) {
+                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
+                return;
+            }
+            
+            if (isSyncing) {
+                mostrarNotificacion("Ya hay una sincronización en curso", "warning");
+                return;
+            }
+            
+            isSyncing = true;
+            mostrarNotificacion("🔄 Sincronizando con Firebase...", "info");
+            
+            try {
+                // Subir todos los datos a Firebase
+                await database.ref(`${SCHOOL_ID}/sistema`).set(sistema);
+                await database.ref(`${SCHOOL_ID}/ultimaActualizacion`).set(new Date().toISOString());
+                
+                mostrarNotificacion("✅ Datos sincronizados con Firebase", "success");
+                console.log("✅ Datos sincronizados con Firebase");
+            } catch (error) {
+                console.error("Error al sincronizar con Firebase:", error);
+                mostrarNotificacion("❌ Error al sincronizar con Firebase", "error");
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        async function descargarDatosFirebase() {
+            if (!firebaseInitialized || !isOnline) {
+                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
+                return;
+            }
+            
+            mostrarNotificacion("📥 Descargando datos de Firebase...", "info");
+            
+            try {
+                const snapshot = await database.ref(`${SCHOOL_ID}/sistema`).once('value');
+                const datosRemotos = snapshot.val();
+                
+                if (datosRemotos) {
+                    mostrarConfirmacion(
+                        "Descargar Datos Remotos",
+                        "¿Desea sobrescribir los datos locales con los datos de Firebase?",
+                        function() {
+                            sistema = datosRemotos;
+                            guardarDatos();
+                            cargarDatos();
+                            mostrarNotificacion("✅ Datos descargados de Firebase", "success");
+                        }
+                    );
+                } else {
+                    mostrarNotificacion("No hay datos en Firebase", "warning");
+                }
+            } catch (error) {
+                console.error("Error al descargar datos:", error);
+                mostrarNotificacion("❌ Error al descargar datos de Firebase", "error");
+            }
+        }
+
+        function forzarSubidaFirebase() {
+            if (!firebaseInitialized) {
+                mostrarNotificacion("Firebase no está inicializado", "error");
+                return;
+            }
+            
+            mostrarConfirmacion(
+                "Forzar Subida a Firebase",
+                "¿Está seguro de subir todos los datos locales a Firebase? Esto sobrescribirá los datos remotos.",
+                async function() {
+                    mostrarNotificacion("📤 Subiendo datos a Firebase...", "info");
+                    
+                    try {
+                        await database.ref(`${SCHOOL_ID}/sistema`).set(sistema);
+                        await database.ref(`${SCHOOL_ID}/ultimaActualizacion`).set(new Date().toISOString());
+                        
+                        mostrarNotificacion("✅ Datos subidos correctamente a Firebase", "success");
+                    } catch (error) {
+                        console.error("Error al subir datos:", error);
+                        mostrarNotificacion("❌ Error al subir datos a Firebase", "error");
+                    }
+                }
+            );
+        }
+
+        function iniciarEscuchaFirebase() {
+            if (!firebaseInitialized || !isOnline) {
+                console.log("No se puede iniciar escucha Firebase: no conectado");
+                return;
+            }
+            
+            console.log("👂 Iniciando escucha de cambios en Firebase...");
+            
+            // Escuchar cambios en los datos
+            database.ref(`${SCHOOL_ID}/sistema`).on('value', (snapshot) => {
+                const datosRemotos = snapshot.val();
+                
+                if (datosRemotos && !isSyncing) {
+                    console.log("🔄 Cambios detectados en Firebase");
+                    
+                    // Comparar marcas de tiempo para evitar bucles
+                    const ultimaActualizacionLocal = localStorage.getItem('ultimaActualizacionLocal');
+                    const ultimaActualizacionRemota = datosRemotos.ultimaActualizacion;
+                    
+                    if (ultimaActualizacionLocal !== ultimaActualizacionRemota) {
+                        mostrarConfirmacion(
+                            "Actualización Disponible",
+                            "Hay cambios nuevos en Firebase. ¿Desea actualizar los datos locales?",
+                            function() {
+                                sistema = datosRemotos;
+                                guardarDatos();
+                                cargarDatos();
+                                localStorage.setItem('ultimaActualizacionLocal', ultimaActualizacionRemota);
+                                mostrarNotificacion("✅ Datos actualizados desde Firebase", "success");
+                            }
+                        );
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // FUNCIONES PARA LOGOS
         // ============================================
         function aplicarLogos() {
             const logoLeftImg = document.getElementById('logo-left-img');
@@ -1983,148 +2111,6 @@
             mostrarNotificacion("Logos restaurados a los valores predeterminados", "success");
         }
 
-        function inicializarConfiguracionLogos() {
-            // Botón para cargar logo izquierdo desde URL
-            const btnCargarLogoLeftURL = document.getElementById('btn-cargar-logo-left-url');
-            if (btnCargarLogoLeftURL) {
-                btnCargarLogoLeftURL.addEventListener('click', function() {
-                    const url = document.getElementById('logo-left-url').value.trim();
-                    if (!url) {
-                        mostrarNotificacion("Ingrese una URL válida", "error");
-                        return;
-                    }
-                    
-                    cargarLogoDesdeURL(url, 'izquierdo')
-                        .then(() => {
-                            mostrarNotificacion("Logo izquierdo cargado desde URL", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            // Botón para cargar logo izquierdo desde archivo - CORREGIDO
-            const btnCargarLogoLeftFile = document.getElementById('btn-cargar-logo-left-file');
-            if (btnCargarLogoLeftFile) {
-                btnCargarLogoLeftFile.addEventListener('click', function() {
-                    const fileInput = document.getElementById('logo-left-file');
-                    if (!fileInput.files.length) {
-                        mostrarNotificacion("Seleccione un archivo", "error");
-                        return;
-                    }
-                    
-                    const archivo = fileInput.files[0];
-                    cargarLogoDesdeArchivo(archivo, 'izquierdo')
-                        .then(() => {
-                            mostrarNotificacion("Logo izquierdo cargado desde archivo", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            // Botón para cargar logo derecho desde URL
-            const btnCargarLogoRightURL = document.getElementById('btn-cargar-logo-right-url');
-            if (btnCargarLogoRightURL) {
-                btnCargarLogoRightURL.addEventListener('click', function() {
-                    const url = document.getElementById('logo-right-url').value.trim();
-                    if (!url) {
-                        mostrarNotificacion("Ingrese una URL válida", "error");
-                        return;
-                    }
-                    
-                    cargarLogoDesdeURL(url, 'derecho')
-                        .then(() => {
-                            mostrarNotificacion("Logo institucional cargado desde URL", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            // Botón para cargar logo derecho desde archivo - CORREGIDO
-            const btnCargarLogoRightFile = document.getElementById('btn-cargar-logo-right-file');
-            if (btnCargarLogoRightFile) {
-                btnCargarLogoRightFile.addEventListener('click', function() {
-                    const fileInput = document.getElementById('logo-right-file');
-                    if (!fileInput.files.length) {
-                        mostrarNotificacion("Seleccione un archivo", "error");
-                        return;
-                    }
-                    
-                    const archivo = fileInput.files[0];
-                    cargarLogoDesdeArchivo(archivo, 'derecho')
-                        .then(() => {
-                            mostrarNotificacion("Logo institucional cargado desde archivo", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            // Botón para aplicar cambios
-            const btnAplicarLogos = document.getElementById('btn-aplicar-logos');
-            if (btnAplicarLogos) {
-                btnAplicarLogos.addEventListener('click', function() {
-                    aplicarLogos();
-                    guardarDatos();
-                    mostrarNotificacion("Logos aplicados correctamente", "success");
-                });
-            }
-            
-            // Botón para restaurar logos predeterminados
-            const btnRestaurarLogos = document.getElementById('btn-restaurar-logos');
-            if (btnRestaurarLogos) {
-                btnRestaurarLogos.addEventListener('click', function() {
-                    mostrarConfirmacion(
-                        'Restaurar Logos',
-                        '¿Está seguro de restaurar los logos predeterminados?',
-                        function() {
-                            restaurarLogosPredeterminados();
-                        }
-                    );
-                });
-            }
-            
-            // Eventos directos en los inputs de archivo para mejor UX
-            const logoLeftFileInput = document.getElementById('logo-left-file');
-            const logoRightFileInput = document.getElementById('logo-right-file');
-            
-            if (logoLeftFileInput) {
-                logoLeftFileInput.addEventListener('change', function() {
-                    if (this.files.length) {
-                        const archivo = this.files[0];
-                        cargarLogoDesdeArchivo(archivo, 'izquierdo')
-                            .then(() => {
-                                mostrarNotificacion("Logo izquierdo cargado automáticamente", "success");
-                            })
-                            .catch(error => {
-                                console.error("Error:", error);
-                            });
-                    }
-                });
-            }
-            
-            if (logoRightFileInput) {
-                logoRightFileInput.addEventListener('change', function() {
-                    if (this.files.length) {
-                        const archivo = this.files[0];
-                        cargarLogoDesdeArchivo(archivo, 'derecho')
-                            .then(() => {
-                                mostrarNotificacion("Logo institucional cargado automáticamente", "success");
-                            })
-                            .catch(error => {
-                                console.error("Error:", error);
-                            });
-                    }
-                });
-            }
-        }
-
         // ============================================
         // CORRECCIÓN: FUNCIÓN DE ESTADO FIREBASE
         // ============================================
@@ -2151,7 +2137,7 @@
         }
 
         // ============================================
-        // INICIALIZACIÓN DE FIREBASE (OPCIONAL)
+        // INICIALIZACIÓN DE FIREBASE
         // ============================================
         function inicializarFirebase() {
             try {
@@ -2167,13 +2153,12 @@
                         actualizarEstadoFirebase();
                         
                         if (isOnline) {
-                            mostrarNotificacion("Conectado a Firebase RTDB", "success");
-                            // Aquí podrías agregar sincronización si lo necesitas
+                            mostrarNotificacion("✅ Conectado a Firebase RTDB", "success");
+                            iniciarEscuchaFirebase();
+                        } else {
+                            mostrarNotificacion("⚠️ Sin conexión a Firebase", "warning");
                         }
                     });
-                    
-                    // Manejar errores
-                    database.ref().onDisconnect().set({ last_online: firebase.database.ServerValue.TIMESTAMP });
                     
                     console.log("🔥 Firebase inicializado correctamente");
                 } else {
@@ -2192,46 +2177,7 @@
         }
 
         // ============================================
-        // FUNCIONES DE SINCRONIZACIÓN (OPCIONAL)
-        // ============================================
-        function sincronizarConFirebase() {
-            if (!firebaseInitialized || !isOnline) {
-                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
-                return;
-            }
-            
-            syncInProgress = true;
-            mostrarNotificacion("Sincronizando con Firebase...", "info");
-            
-            // Aquí implementarías la sincronización real
-            setTimeout(() => {
-                syncInProgress = false;
-                mostrarNotificacion("Datos sincronizados con Firebase", "success");
-            }, 1500);
-        }
-
-        function forzarSubidaFirebase() {
-            if (!firebaseInitialized) {
-                mostrarNotificacion("Firebase no está inicializado", "error");
-                return;
-            }
-            
-            mostrarConfirmacion(
-                "Forzar Subida a Firebase",
-                "¿Está seguro de subir todos los datos locales a Firebase? Esto sobrescribirá los datos remotos.",
-                function() {
-                    mostrarNotificacion("Subiendo datos a Firebase...", "info");
-                    
-                    // Aquí implementarías la subida real
-                    setTimeout(() => {
-                        mostrarNotificacion("Datos subidos correctamente a Firebase", "success");
-                    }, 2000);
-                }
-            );
-        }
-
-        // ============================================
-        // AUTENTICACIÓN CON PIN (SIMPLIFICADA)
+        // AUTENTICACIÓN CON PIN
         // ============================================
         function inicializarSistemaPIN() {
             const pinOverlay = document.getElementById('pin-overlay');
@@ -2539,6 +2485,7 @@
                         if (inputNombre && inputNombre.value.trim() !== curso.nombre) {
                             curso.nombre = inputNombre.value.trim();
                             guardarDatos();
+                            sincronizarConFirebase();
                             actualizarListaCursos();
                             actualizarInterfazCompleta();
                             mostrarNotificacion(`Curso ${codigo} actualizado`);
@@ -2594,6 +2541,7 @@
             sistema.mediadores = sistema.mediadores.filter(mediador => mediador.curso !== codigo);
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarListaCursos();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
@@ -2703,6 +2651,7 @@
                     if (inputPuntos) estudiante.puntos = parseInt(inputPuntos.value) || 0;
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarMediadores();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Estudiante ${estudiante.nombre} actualizado`);
@@ -2742,6 +2691,7 @@
                     sistema.mediadores = sistema.mediadores.filter(mediador => mediador.id !== id);
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaEstudiantes();
                     actualizarInterfazCompleta();
                     actualizarRankingCursos();
@@ -2924,6 +2874,7 @@
             actualizarMediadores();
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
             
@@ -3013,6 +2964,7 @@
             sistema.cursos[cursoId].puntosColectivos += evaluacion.puntos;
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
             
@@ -3073,7 +3025,7 @@
         }
 
         // ============================================
-        // RANKING DE CURSOS - ACTUALIZADO SIN PUNTOS INDIVIDUALES
+        // RANKING DE CURSOS
         // ============================================
         function actualizarRankingCursos() {
             // Calcular estadísticas
@@ -3708,86 +3660,7 @@
             actualizarTablaNiveles();
             actualizarTablaPremios();
             actualizarEstadisticasSistema();
-            actualizarEstadoFirebase(); // ¡CORRECCIÓN AQUÍ!
-            
-            // Configurar eventos de los botones
-            const btnCambiarPin = document.getElementById('btn-cambiar-pin');
-            if (btnCambiarPin) {
-                btnCambiarPin.addEventListener('click', function() {
-                    const nuevoPin1 = document.getElementById('nuevo-pin-1').value;
-                    const nuevoPin2 = document.getElementById('nuevo-pin-2').value;
-                    
-                    if (!nuevoPin1 || !nuevoPin2) {
-                        mostrarNotificacion('Complete ambos campos del PIN', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1.length !== 4) {
-                        mostrarNotificacion('El PIN debe tener exactamente 4 dígitos', 'error');
-                        return;
-                    }
-                    
-                    if (!/^\d{4}$/.test(nuevoPin1)) {
-                        mostrarNotificacion('El PIN solo puede contener números', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1 !== nuevoPin2) {
-                        mostrarNotificacion('Los PIN no coinciden', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1 === sistema.seguridad.pin) {
-                        mostrarNotificacion('El nuevo PIN no puede ser igual al actual', 'error');
-                        return;
-                    }
-                    
-                    sistema.seguridad.pin = nuevoPin1;
-                    sistema.seguridad.pinConfigurado = true;
-                    
-                    guardarDatos();
-                    actualizarEstadoSesion();
-                    
-                    document.getElementById('nuevo-pin-1').value = '';
-                    document.getElementById('nuevo-pin-2').value = '';
-                    
-                    mostrarNotificacion('✅ PIN cambiado correctamente', 'success');
-                });
-            }
-            
-            const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
-            if (btnCerrarSesion) {
-                btnCerrarSesion.addEventListener('click', function() {
-                    mostrarConfirmacion(
-                        'Cerrar Sesión',
-                        '¿Está seguro de cerrar la sesión de configuración? Deberá ingresar el PIN nuevamente para acceder.',
-                        function() {
-                            autenticado = false;
-                            sesionIniciada = null;
-                            sessionStorage.removeItem('sesionConfiguracion');
-                            document.getElementById('config-tab').classList.add('disabled');
-                            
-                            if (document.querySelector('.tab.active').getAttribute('data-tab') === 'config') {
-                                document.querySelector('.tab[data-tab="registro"]').click();
-                            }
-                            
-                            document.getElementById('pin-overlay').classList.remove('hidden');
-                            mostrarNotificacion('Sesión de configuración cerrada', 'info');
-                        }
-                    );
-                });
-            }
-            
-            // Configurar botones de Firebase
-            const btnSincronizarAhora = document.getElementById('btn-sincronizar-ahora');
-            if (btnSincronizarAhora) {
-                btnSincronizarAhora.addEventListener('click', sincronizarConFirebase);
-            }
-            
-            const btnForzarSubida = document.getElementById('btn-forzar-subida');
-            if (btnForzarSubida) {
-                btnForzarSubida.addEventListener('click', forzarSubidaFirebase);
-            }
+            actualizarEstadoFirebase();
         }
 
         function actualizarTablaCodigos() {
@@ -3839,22 +3712,6 @@
             
             if (multEvaluacion) multEvaluacion.value = sistema.configuracion.multiplicadorEvaluacion;
             if (maxMediadoresNivel) maxMediadoresNivel.value = sistema.configuracion.maxMediadoresPorNivel;
-            
-            const btnGuardarConfigPuntos = document.getElementById('btn-guardar-config-puntos');
-            if (btnGuardarConfigPuntos) {
-                btnGuardarConfigPuntos.addEventListener('click', function() {
-                    const multiplicador = parseFloat(document.getElementById('mult-evaluacion').value) || 2;
-                    const maxMediadores = parseInt(document.getElementById('max-mediadores-nivel').value) || 3;
-                    
-                    sistema.configuracion.multiplicadorEvaluacion = multiplicador;
-                    sistema.configuracion.maxMediadoresPorNivel = maxMediadores;
-                    
-                    guardarDatos();
-                    actualizarInterfazCompleta();
-                    
-                    mostrarNotificacion('Configuración de puntos guardada');
-                });
-            }
         }
 
         function guardarCodigo(codigo) {
@@ -3872,6 +3729,7 @@
             if (inputDesc) config.descripcion = inputDesc.value.trim();
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarContenidoRegistro();
             mostrarNotificacion(`Código ${codigo} actualizado`);
         }
@@ -3886,6 +3744,7 @@
                 function() {
                     delete sistema.configuracion.puntosCodigos[codigo];
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaCodigos();
                     actualizarContenidoRegistro();
                     mostrarNotificacion(`Código ${codigo} eliminado`, 'warning');
@@ -3949,6 +3808,7 @@
             sistema.configuracion.nivelesMediadores.sort((a, b) => a.puntosMin - b.puntosMin);
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarMediadores();
             actualizarInterfazCompleta();
             mostrarNotificacion(`Nivel actualizado`);
@@ -3964,6 +3824,7 @@
                 function() {
                     sistema.configuracion.nivelesMediadores.splice(index, 1);
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaNiveles();
                     actualizarMediadores();
                     actualizarInterfazCompleta();
@@ -4062,6 +3923,7 @@
             sistema.configuracion.premiosIndividuales.sort((a, b) => a.puntosMin - b.puntosMin);
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarContenidoInformacion();
             mostrarNotificacion('Premio individual actualizado');
         }
@@ -4076,6 +3938,7 @@
                 function() {
                     sistema.configuracion.premiosIndividuales.splice(index, 1);
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio eliminado', 'warning');
@@ -4099,6 +3962,7 @@
             sistema.configuracion.premiosColectivos.sort((a, b) => a.puntos - b.puntos);
             
             guardarDatos();
+            sincronizarConFirebase();
             actualizarContenidoInformacion();
             mostrarNotificacion('Premio colectivo actualizado');
         }
@@ -4113,6 +3977,7 @@
                 function() {
                     sistema.configuracion.premiosColectivos.splice(index, 1);
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio eliminado', 'warning');
@@ -4205,6 +4070,7 @@
                         function() {
                             sistema = datos.sistema;
                             guardarDatos();
+                            sincronizarConFirebase();
                             cargarDatos();
                             mostrarNotificacion('Datos importados correctamente', 'success');
                         }
@@ -4314,6 +4180,7 @@
                     };
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     cargarDatos();
                     mostrarNotificacion('Sistema restablecido a valores predeterminados', 'success');
                 }
@@ -4329,12 +4196,8 @@
             // Cargar datos
             cargarDatos();
             
-            // Inicializar Firebase (opcional)
-            try {
-                inicializarFirebase();
-            } catch (error) {
-                console.log("Firebase no disponible, modo local activado");
-            }
+            // Inicializar Firebase
+            inicializarFirebase();
             
             // Inicializar componentes
             inicializarSistemaPIN();
@@ -4342,13 +4205,91 @@
             inicializarModal();
             inicializarRegistroIndividual();
             inicializarEvaluacionColectiva();
-            inicializarConfiguracionLogos();
             
-            // Aplicar logos guardados
-            aplicarLogos();
+            // Configurar eventos de configuración
+            const btnCambiarPin = document.getElementById('btn-cambiar-pin');
+            if (btnCambiarPin) {
+                btnCambiarPin.addEventListener('click', function() {
+                    const nuevoPin1 = document.getElementById('nuevo-pin-1').value;
+                    const nuevoPin2 = document.getElementById('nuevo-pin-2').value;
+                    
+                    if (!nuevoPin1 || !nuevoPin2) {
+                        mostrarNotificacion('Complete ambos campos del PIN', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1.length !== 4) {
+                        mostrarNotificacion('El PIN debe tener exactamente 4 dígitos', 'error');
+                        return;
+                    }
+                    
+                    if (!/^\d{4}$/.test(nuevoPin1)) {
+                        mostrarNotificacion('El PIN solo puede contener números', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1 !== nuevoPin2) {
+                        mostrarNotificacion('Los PIN no coinciden', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1 === sistema.seguridad.pin) {
+                        mostrarNotificacion('El nuevo PIN no puede ser igual al actual', 'error');
+                        return;
+                    }
+                    
+                    sistema.seguridad.pin = nuevoPin1;
+                    sistema.seguridad.pinConfigurado = true;
+                    
+                    guardarDatos();
+                    sincronizarConFirebase();
+                    actualizarEstadoSesion();
+                    
+                    document.getElementById('nuevo-pin-1').value = '';
+                    document.getElementById('nuevo-pin-2').value = '';
+                    
+                    mostrarNotificacion('✅ PIN cambiado correctamente', 'success');
+                });
+            }
             
-            // Actualizar interfaz
-            actualizarInterfazCompleta();
+            const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+            if (btnCerrarSesion) {
+                btnCerrarSesion.addEventListener('click', function() {
+                    mostrarConfirmacion(
+                        'Cerrar Sesión',
+                        '¿Está seguro de cerrar la sesión de configuración? Deberá ingresar el PIN nuevamente para acceder.',
+                        function() {
+                            autenticado = false;
+                            sesionIniciada = null;
+                            sessionStorage.removeItem('sesionConfiguracion');
+                            document.getElementById('config-tab').classList.add('disabled');
+                            
+                            if (document.querySelector('.tab.active').getAttribute('data-tab') === 'config') {
+                                document.querySelector('.tab[data-tab="registro"]').click();
+                            }
+                            
+                            document.getElementById('pin-overlay').classList.remove('hidden');
+                            mostrarNotificacion('Sesión de configuración cerrada', 'info');
+                        }
+                    );
+                });
+            }
+            
+            // Configurar botones de Firebase
+            const btnSincronizarAhora = document.getElementById('btn-sincronizar-ahora');
+            if (btnSincronizarAhora) {
+                btnSincronizarAhora.addEventListener('click', sincronizarConFirebase);
+            }
+            
+            const btnForzarSubida = document.getElementById('btn-forzar-subida');
+            if (btnForzarSubida) {
+                btnForzarSubida.addEventListener('click', forzarSubidaFirebase);
+            }
+            
+            const btnForzarDescarga = document.getElementById('btn-forzar-descarga');
+            if (btnForzarDescarga) {
+                btnForzarDescarga.addEventListener('click', descargarDatosFirebase);
+            }
             
             // Configurar botón de actualizar ranking
             const btnActualizarRanking = document.getElementById('btn-actualizar-ranking');
@@ -4388,6 +4329,7 @@
                     document.getElementById('nuevo-curso-nombre').value = '';
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Curso ${nombre} agregado correctamente`);
                 });
@@ -4418,6 +4360,7 @@
                     document.getElementById('nuevo-estudiante-nombre').value = '';
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Estudiante ${nombre} agregado al curso ${codigoCurso}`);
                 });
@@ -4465,6 +4408,7 @@
                     };
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Código ${codigo} agregado`);
                 });
@@ -4481,6 +4425,7 @@
                     });
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio individual agregado');
@@ -4497,9 +4442,27 @@
                     });
                     
                     guardarDatos();
+                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio colectivo agregado');
+                });
+            }
+            
+            const btnGuardarConfigPuntos = document.getElementById('btn-guardar-config-puntos');
+            if (btnGuardarConfigPuntos) {
+                btnGuardarConfigPuntos.addEventListener('click', function() {
+                    const multiplicador = parseFloat(document.getElementById('mult-evaluacion').value) || 2;
+                    const maxMediadores = parseInt(document.getElementById('max-mediadores-nivel').value) || 3;
+                    
+                    sistema.configuracion.multiplicadorEvaluacion = multiplicador;
+                    sistema.configuracion.maxMediadoresPorNivel = maxMediadores;
+                    
+                    guardarDatos();
+                    sincronizarConFirebase();
+                    actualizarInterfazCompleta();
+                    
+                    mostrarNotificacion('Configuración de puntos guardada');
                 });
             }
             
@@ -4527,6 +4490,108 @@
             const btnRestablecerDatos = document.getElementById('btn-restablecer-datos');
             if (btnRestablecerDatos) {
                 btnRestablecerDatos.addEventListener('click', restablecerDatos);
+            }
+            
+            // Configurar logos
+            const btnCargarLogoLeftURL = document.getElementById('btn-cargar-logo-left-url');
+            if (btnCargarLogoLeftURL) {
+                btnCargarLogoLeftURL.addEventListener('click', function() {
+                    const url = document.getElementById('logo-left-url').value.trim();
+                    if (!url) {
+                        mostrarNotificacion("Ingrese una URL válida", "error");
+                        return;
+                    }
+                    
+                    cargarLogoDesdeURL(url, 'izquierdo')
+                        .then(() => {
+                            mostrarNotificacion("Logo izquierdo cargado desde URL", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            const btnCargarLogoLeftFile = document.getElementById('btn-cargar-logo-left-file');
+            if (btnCargarLogoLeftFile) {
+                btnCargarLogoLeftFile.addEventListener('click', function() {
+                    const fileInput = document.getElementById('logo-left-file');
+                    if (!fileInput.files.length) {
+                        mostrarNotificacion("Seleccione un archivo", "error");
+                        return;
+                    }
+                    
+                    const archivo = fileInput.files[0];
+                    cargarLogoDesdeArchivo(archivo, 'izquierdo')
+                        .then(() => {
+                            mostrarNotificacion("Logo izquierdo cargado desde archivo", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            const btnCargarLogoRightURL = document.getElementById('btn-cargar-logo-right-url');
+            if (btnCargarLogoRightURL) {
+                btnCargarLogoRightURL.addEventListener('click', function() {
+                    const url = document.getElementById('logo-right-url').value.trim();
+                    if (!url) {
+                        mostrarNotificacion("Ingrese una URL válida", "error");
+                        return;
+                    }
+                    
+                    cargarLogoDesdeURL(url, 'derecho')
+                        .then(() => {
+                            mostrarNotificacion("Logo institucional cargado desde URL", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            const btnCargarLogoRightFile = document.getElementById('btn-cargar-logo-right-file');
+            if (btnCargarLogoRightFile) {
+                btnCargarLogoRightFile.addEventListener('click', function() {
+                    const fileInput = document.getElementById('logo-right-file');
+                    if (!fileInput.files.length) {
+                        mostrarNotificacion("Seleccione un archivo", "error");
+                        return;
+                    }
+                    
+                    const archivo = fileInput.files[0];
+                    cargarLogoDesdeArchivo(archivo, 'derecho')
+                        .then(() => {
+                            mostrarNotificacion("Logo institucional cargado desde archivo", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            const btnAplicarLogos = document.getElementById('btn-aplicar-logos');
+            if (btnAplicarLogos) {
+                btnAplicarLogos.addEventListener('click', function() {
+                    aplicarLogos();
+                    guardarDatos();
+                    sincronizarConFirebase();
+                    mostrarNotificacion("Logos aplicados correctamente", "success");
+                });
+            }
+            
+            const btnRestaurarLogos = document.getElementById('btn-restaurar-logos');
+            if (btnRestaurarLogos) {
+                btnRestaurarLogos.addEventListener('click', function() {
+                    mostrarConfirmacion(
+                        'Restaurar Logos',
+                        '¿Está seguro de restaurar los logos predeterminados?',
+                        function() {
+                            restaurarLogosPredeterminados();
+                        }
+                    );
+                });
             }
             
             console.log('✅ Sistema de Convivencia inicializado correctamente');
