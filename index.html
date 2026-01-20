@@ -1603,7 +1603,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN FIREBASE (SIMPLIFICADA PARA PRUEBAS)
+        // CONFIGURACIÓN FIREBASE (CORREGIDA Y SIMPLIFICADA)
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1G0UGc2iHVH-db7HNLI8T9u7Y1aqSD44",
@@ -1617,10 +1617,62 @@
 
         const SCHOOL_ID = "escuela_default";
 
-        let database;
+        // Intentar inicializar Firebase
         let firebaseInitialized = false;
-        let isOnline = false;
-        let syncInProgress = false;
+        let database = null;
+
+        try {
+            // Inicializar Firebase
+            if (firebase.apps.length === 0) {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                firebaseInitialized = true;
+                console.log("✅ Firebase inicializado correctamente");
+                
+                // Actualizar estado en la interfaz
+                updateFirebaseStatus(true);
+            }
+        } catch (error) {
+            console.warn("⚠️ No se pudo inicializar Firebase, usando modo offline:", error);
+            updateFirebaseStatus(false, error.message);
+        }
+
+        function updateFirebaseStatus(connected, errorMessage = "") {
+            const statusElement = document.getElementById('firebase-config-status');
+            if (statusElement) {
+                if (connected) {
+                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
+                    
+                    // Crear indicador de estado si no existe
+                    let statusIndicator = document.querySelector('.firebase-status');
+                    if (!statusIndicator) {
+                        statusIndicator = document.createElement('div');
+                        statusIndicator.className = 'firebase-status firebase-online';
+                        statusIndicator.innerHTML = `
+                            <div class="sync-indicator sync-active"></div>
+                            <span>Conectado a Firebase</span>
+                        `;
+                        document.body.appendChild(statusIndicator);
+                    }
+                } else {
+                    if (errorMessage) {
+                        statusElement.innerHTML = `<span style="color: var(--warning);">⚠️ Modo offline: ${errorMessage}</span>`;
+                    } else {
+                        statusElement.innerHTML = '<span style="color: var(--warning);">⚠️ Modo offline - Usando almacenamiento local</span>';
+                    }
+                    
+                    // Actualizar o crear indicador de estado
+                    let statusIndicator = document.querySelector('.firebase-status');
+                    if (statusIndicator) {
+                        statusIndicator.className = 'firebase-status firebase-offline';
+                        statusIndicator.innerHTML = `
+                            <div class="sync-indicator sync-inactive"></div>
+                            <span>Modo offline</span>
+                        `;
+                    }
+                }
+            }
+        }
 
         // ============================================
         // CONFIGURACIÓN DEL SISTEMA
@@ -1755,6 +1807,18 @@
         function guardarDatos() {
             try {
                 localStorage.setItem('sistemaConvivenciaFinal', JSON.stringify(sistema));
+                
+                // Intentar guardar en Firebase si está disponible
+                if (firebaseInitialized && database) {
+                    const escuelaRef = database.ref(SCHOOL_ID);
+                    escuelaRef.set(sistema)
+                        .then(() => {
+                            console.log("✅ Datos guardados en Firebase");
+                        })
+                        .catch((error) => {
+                            console.warn("⚠️ Error al guardar en Firebase:", error);
+                        });
+                }
             } catch (error) {
                 console.error("Error al guardar datos:", error);
                 mostrarNotificacion("Error al guardar datos", "error");
@@ -1762,7 +1826,7 @@
         }
 
         // ============================================
-        // AUTENTICACIÓN CON PIN (SIMPLIFICADA)
+        // AUTENTICACIÓN CON PIN
         // ============================================
         function inicializarSistemaPIN() {
             const pinOverlay = document.getElementById('pin-overlay');
@@ -3305,6 +3369,37 @@
                             mostrarNotificacion('Sesión de configuración cerrada', 'info');
                         }
                     );
+                });
+            }
+            
+            // Configurar botones de Firebase
+            const btnSincronizarAhora = document.getElementById('btn-sincronizar-ahora');
+            if (btnSincronizarAhora) {
+                btnSincronizarAhora.addEventListener('click', function() {
+                    if (firebaseInitialized && database) {
+                        mostrarNotificacion('Sincronizando con Firebase...', 'info');
+                        guardarDatos();
+                        setTimeout(() => {
+                            mostrarNotificacion('✅ Datos sincronizados con Firebase', 'success');
+                        }, 1000);
+                    } else {
+                        mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
+                    }
+                });
+            }
+            
+            const btnForzarSubida = document.getElementById('btn-forzar-subida');
+            if (btnForzarSubida) {
+                btnForzarSubida.addEventListener('click', function() {
+                    if (firebaseInitialized && database) {
+                        mostrarNotificacion('Subiendo datos a Firebase...', 'info');
+                        guardarDatos();
+                        setTimeout(() => {
+                            mostrarNotificacion('✅ Datos subidos a Firebase correctamente', 'success');
+                        }, 1000);
+                    } else {
+                        mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
+                    }
                 });
             }
         }
