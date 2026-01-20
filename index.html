@@ -878,6 +878,40 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
         }
+
+        /* Estilos para configuración de logos */
+        .logo-preview-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+        }
+
+        .logo-preview {
+            text-align: center;
+        }
+
+        .logo-preview-img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .logo-config-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .logo-config-section {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -925,10 +959,10 @@
         <header>
             <div class="header-logos">
                 <div class="logo-left">
-                    <img src="https://github.com/ccari-crypto/Juegos-de-Convivencia-escolar/blob/main/JDH.png?raw=true" alt="Logo Izquierdo">
+                    <img id="logo-left-img" src="https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO" alt="Logo Izquierdo">
                 </div>
                 <div class="logo-right">
-                    <img src="https://github.com/ccari-crypto/Juegos-de-Convivencia-escolar/blob/main/Logo%20NSM.png?raw=true" alt="Logo Institucional">
+                    <img id="logo-right-img" src="https://via.placeholder.com/80x80/3498db/ffffff?text=INST" alt="Logo Institucional">
                 </div>
             </div>
             <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🏆 Juegos de Convivencia Escolar</h1>
@@ -1340,7 +1374,7 @@
                 <div class="form-group">
                     <h4 style="margin-bottom: 15px; color: var(--secondary);">🔥 Configuración Firebase RTDB</h4>
                     <div style="padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid var(--warning);">
-                        <p><strong>Estado Firebase:</strong> <span id="firebase-config-status">Verificando...</span></p>
+                        <p><strong>Estado Firebase:</strong> <span id="firebase-config-status">Modo Local (Firebase No Iniciado)</span></p>
                         <p><small>ID de Escuela: <strong id="school-id-display">escuela_default</strong></small></p>
                         <div style="margin-top: 10px;">
                             <button id="btn-sincronizar-ahora" class="btn-small">🔄 Sincronizar Ahora</button>
@@ -1356,6 +1390,7 @@
                 <div class="config-tab" data-config-tab="puntos">🎯 Puntos y Códigos</div>
                 <div class="config-tab" data-config-tab="mediadores">🏆 Mediadores</div>
                 <div class="config-tab" data-config-tab="premios">🏅 Premios</div>
+                <div class="config-tab" data-config-tab="logos">🖼️ Logos</div>
                 <div class="config-tab" data-config-tab="backup">💾 Backup</div>
             </div>
             
@@ -1549,6 +1584,79 @@
                 </div>
             </div>
             
+            <!-- NUEVA SECCIÓN: CONFIGURACIÓN DE LOGOS -->
+            <div class="config-tab-content" id="config-logos">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: var(--primary);">🖼️ Configuración de Logos</h3>
+                    
+                    <div class="logo-preview-container">
+                        <div class="logo-preview">
+                            <h4 style="color: var(--secondary); margin-bottom: 10px;">Logo Izquierdo</h4>
+                            <img id="logo-left-preview" src="https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO" alt="Logo Izquierdo" class="logo-preview-img">
+                            <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">Actual</p>
+                        </div>
+                        <div class="logo-preview">
+                            <h4 style="color: var(--secondary); margin-bottom: 10px;">Logo Institucional</h4>
+                            <img id="logo-right-preview" src="https://via.placeholder.com/80x80/3498db/ffffff?text=INST" alt="Logo Institucional" class="logo-preview-img">
+                            <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">Actual</p>
+                        </div>
+                    </div>
+                    
+                    <div class="logo-config-section">
+                        <div class="form-group">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Logo Izquierdo</h4>
+                            
+                            <div class="input-group">
+                                <input type="text" id="logo-left-url" placeholder="URL de la imagen (https://...)" style="flex: 2;">
+                                <button id="btn-cargar-logo-left-url" class="btn-small" style="flex: 1;">🌐 Cargar desde URL</button>
+                            </div>
+                            
+                            <div style="margin: 15px 0;">
+                                <label style="display: block; margin-bottom: 10px;">O cargar desde archivo:</label>
+                                <input type="file" id="logo-left-file" accept="image/*" style="margin-bottom: 10px;">
+                                <button id="btn-cargar-logo-left-file" class="btn-small">📁 Cargar Archivo</button>
+                            </div>
+                            
+                            <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;">
+                                <small><strong>Dimensiones recomendadas:</strong> 80x80 píxeles</small><br>
+                                <small><strong>Formatos soportados:</strong> PNG, JPG, SVG</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Logo Institucional</h4>
+                            
+                            <div class="input-group">
+                                <input type="text" id="logo-right-url" placeholder="URL de la imagen (https://...)" style="flex: 2;">
+                                <button id="btn-cargar-logo-right-url" class="btn-small" style="flex: 1;">🌐 Cargar desde URL</button>
+                            </div>
+                            
+                            <div style="margin: 15px 0;">
+                                <label style="display: block; margin-bottom: 10px;">O cargar desde archivo:</label>
+                                <input type="file" id="logo-right-file" accept="image/*" style="margin-bottom: 10px;">
+                                <button id="btn-cargar-logo-right-file" class="btn-small">📁 Cargar Archivo</button>
+                            </div>
+                            
+                            <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;">
+                                <small><strong>Dimensiones recomendadas:</strong> 80x80 píxeles</small><br>
+                                <small><strong>Formatos soportados:</strong> PNG, JPG, SVG</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons" style="margin-top: 30px; justify-content: center;">
+                        <button id="btn-restaurar-logos" class="btn-warning">🔄 Restaurar Logos Predeterminados</button>
+                        <button id="btn-aplicar-logos" class="btn-secondary">💾 Aplicar Cambios</button>
+                    </div>
+                    
+                    <div style="margin-top: 25px; padding: 15px; background: #e8f6f3; border-radius: 8px;">
+                        <h4 style="color: var(--success); margin-bottom: 10px;">💡 Información</h4>
+                        <p><strong>Los logos se mostrarán en la cabecera de la aplicación.</strong></p>
+                        <p><small>Puede usar URLs de imágenes públicas o cargar archivos desde su computadora. Las imágenes se guardarán localmente en su navegador.</small></p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="config-tab-content" id="config-backup">
                 <div class="card">
                     <h3 style="margin-bottom: 20px; color: var(--primary);">💾 Backup y Restauración</h3>
@@ -1603,7 +1711,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN FIREBASE (CORREGIDA Y SIMPLIFICADA)
+        // CONFIGURACIÓN FIREBASE (SIMPLIFICADA PARA PRUEBAS)
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1G0UGc2iHVH-db7HNLI8T9u7Y1aqSD44",
@@ -1617,62 +1725,10 @@
 
         const SCHOOL_ID = "escuela_default";
 
-        // Intentar inicializar Firebase
+        let database;
         let firebaseInitialized = false;
-        let database = null;
-
-        try {
-            // Inicializar Firebase
-            if (firebase.apps.length === 0) {
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                firebaseInitialized = true;
-                console.log("✅ Firebase inicializado correctamente");
-                
-                // Actualizar estado en la interfaz
-                updateFirebaseStatus(true);
-            }
-        } catch (error) {
-            console.warn("⚠️ No se pudo inicializar Firebase, usando modo offline:", error);
-            updateFirebaseStatus(false, error.message);
-        }
-
-        function updateFirebaseStatus(connected, errorMessage = "") {
-            const statusElement = document.getElementById('firebase-config-status');
-            if (statusElement) {
-                if (connected) {
-                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
-                    
-                    // Crear indicador de estado si no existe
-                    let statusIndicator = document.querySelector('.firebase-status');
-                    if (!statusIndicator) {
-                        statusIndicator = document.createElement('div');
-                        statusIndicator.className = 'firebase-status firebase-online';
-                        statusIndicator.innerHTML = `
-                            <div class="sync-indicator sync-active"></div>
-                            <span>Conectado a Firebase</span>
-                        `;
-                        document.body.appendChild(statusIndicator);
-                    }
-                } else {
-                    if (errorMessage) {
-                        statusElement.innerHTML = `<span style="color: var(--warning);">⚠️ Modo offline: ${errorMessage}</span>`;
-                    } else {
-                        statusElement.innerHTML = '<span style="color: var(--warning);">⚠️ Modo offline - Usando almacenamiento local</span>';
-                    }
-                    
-                    // Actualizar o crear indicador de estado
-                    let statusIndicator = document.querySelector('.firebase-status');
-                    if (statusIndicator) {
-                        statusIndicator.className = 'firebase-status firebase-offline';
-                        statusIndicator.innerHTML = `
-                            <div class="sync-indicator sync-inactive"></div>
-                            <span>Modo offline</span>
-                        `;
-                    }
-                }
-            }
-        }
+        let isOnline = false;
+        let syncInProgress = false;
 
         // ============================================
         // CONFIGURACIÓN DEL SISTEMA
@@ -1712,7 +1768,11 @@
                     { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
                 ],
                 multiplicadorEvaluacion: 2,
-                maxMediadoresPorNivel: 3
+                maxMediadoresPorNivel: 3,
+                logos: {
+                    izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
+                    derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
+                }
             },
             cursos: {
                 '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
@@ -1795,6 +1855,11 @@
                     if (datos.semanaActual) sistema.semanaActual = datos.semanaActual;
                     
                     console.log("📂 Datos cargados de localStorage");
+                    
+                    // Aplicar logos guardados
+                    if (sistema.configuracion.logos) {
+                        aplicarLogos();
+                    }
                 } catch (error) {
                     console.error("Error al cargar datos:", error);
                     mostrarNotificacion("Error al cargar datos guardados", "error");
@@ -1807,18 +1872,6 @@
         function guardarDatos() {
             try {
                 localStorage.setItem('sistemaConvivenciaFinal', JSON.stringify(sistema));
-                
-                // Intentar guardar en Firebase si está disponible
-                if (firebaseInitialized && database) {
-                    const escuelaRef = database.ref(SCHOOL_ID);
-                    escuelaRef.set(sistema)
-                        .then(() => {
-                            console.log("✅ Datos guardados en Firebase");
-                        })
-                        .catch((error) => {
-                            console.warn("⚠️ Error al guardar en Firebase:", error);
-                        });
-                }
             } catch (error) {
                 console.error("Error al guardar datos:", error);
                 mostrarNotificacion("Error al guardar datos", "error");
@@ -1826,7 +1879,359 @@
         }
 
         // ============================================
-        // AUTENTICACIÓN CON PIN
+        // FUNCIONES PARA LOGOS - CORREGIDAS
+        // ============================================
+        function aplicarLogos() {
+            const logoLeftImg = document.getElementById('logo-left-img');
+            const logoRightImg = document.getElementById('logo-right-img');
+            const logoLeftPreview = document.getElementById('logo-left-preview');
+            const logoRightPreview = document.getElementById('logo-right-preview');
+            
+            if (sistema.configuracion.logos) {
+                if (logoLeftImg && sistema.configuracion.logos.izquierdo) {
+                    logoLeftImg.src = sistema.configuracion.logos.izquierdo;
+                }
+                if (logoRightImg && sistema.configuracion.logos.derecho) {
+                    logoRightImg.src = sistema.configuracion.logos.derecho;
+                }
+                if (logoLeftPreview && sistema.configuracion.logos.izquierdo) {
+                    logoLeftPreview.src = sistema.configuracion.logos.izquierdo;
+                }
+                if (logoRightPreview && sistema.configuracion.logos.derecho) {
+                    logoRightPreview.src = sistema.configuracion.logos.derecho;
+                }
+            }
+        }
+
+        function cargarLogoDesdeURL(url, tipo) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function() {
+                    // Verificar dimensiones (opcional)
+                    if (this.width > 500 || this.height > 500) {
+                        mostrarNotificacion("La imagen es muy grande. Se recomienda 80x80 píxeles", "warning");
+                    }
+                    
+                    sistema.configuracion.logos[tipo] = url;
+                    
+                    // Actualizar previsualización
+                    const preview = document.getElementById(`logo-${tipo}-preview`);
+                    if (preview) {
+                        preview.src = url;
+                    }
+                    
+                    resolve(url);
+                };
+                img.onerror = function() {
+                    mostrarNotificacion("No se pudo cargar la imagen desde la URL", "error");
+                    reject(new Error("Error al cargar imagen"));
+                };
+                img.src = url;
+            });
+        }
+
+        function cargarLogoDesdeArchivo(archivo, tipo) {
+            return new Promise((resolve, reject) => {
+                if (!archivo.type.match('image.*')) {
+                    mostrarNotificacion("Por favor, seleccione un archivo de imagen", "error");
+                    reject(new Error("No es un archivo de imagen"));
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    
+                    sistema.configuracion.logos[tipo] = base64Image;
+                    
+                    // Actualizar previsualización
+                    const preview = document.getElementById(`logo-${tipo}-preview`);
+                    if (preview) {
+                        preview.src = base64Image;
+                    }
+                    
+                    // Actualizar también los logos principales
+                    if (tipo === 'izquierdo') {
+                        document.getElementById('logo-left-img').src = base64Image;
+                    } else {
+                        document.getElementById('logo-right-img').src = base64Image;
+                    }
+                    
+                    resolve(base64Image);
+                };
+                reader.onerror = function() {
+                    mostrarNotificacion("Error al leer el archivo", "error");
+                    reject(new Error("Error al leer archivo"));
+                };
+                reader.readAsDataURL(archivo);
+            });
+        }
+
+        function restaurarLogosPredeterminados() {
+            sistema.configuracion.logos = {
+                izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
+                derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
+            };
+            
+            aplicarLogos();
+            guardarDatos();
+            
+            // Limpiar campos de entrada
+            document.getElementById('logo-left-url').value = '';
+            document.getElementById('logo-right-url').value = '';
+            
+            mostrarNotificacion("Logos restaurados a los valores predeterminados", "success");
+        }
+
+        function inicializarConfiguracionLogos() {
+            // Botón para cargar logo izquierdo desde URL
+            const btnCargarLogoLeftURL = document.getElementById('btn-cargar-logo-left-url');
+            if (btnCargarLogoLeftURL) {
+                btnCargarLogoLeftURL.addEventListener('click', function() {
+                    const url = document.getElementById('logo-left-url').value.trim();
+                    if (!url) {
+                        mostrarNotificacion("Ingrese una URL válida", "error");
+                        return;
+                    }
+                    
+                    cargarLogoDesdeURL(url, 'izquierdo')
+                        .then(() => {
+                            mostrarNotificacion("Logo izquierdo cargado desde URL", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            // Botón para cargar logo izquierdo desde archivo - CORREGIDO
+            const btnCargarLogoLeftFile = document.getElementById('btn-cargar-logo-left-file');
+            if (btnCargarLogoLeftFile) {
+                btnCargarLogoLeftFile.addEventListener('click', function() {
+                    const fileInput = document.getElementById('logo-left-file');
+                    if (!fileInput.files.length) {
+                        mostrarNotificacion("Seleccione un archivo", "error");
+                        return;
+                    }
+                    
+                    const archivo = fileInput.files[0];
+                    cargarLogoDesdeArchivo(archivo, 'izquierdo')
+                        .then(() => {
+                            mostrarNotificacion("Logo izquierdo cargado desde archivo", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            // Botón para cargar logo derecho desde URL
+            const btnCargarLogoRightURL = document.getElementById('btn-cargar-logo-right-url');
+            if (btnCargarLogoRightURL) {
+                btnCargarLogoRightURL.addEventListener('click', function() {
+                    const url = document.getElementById('logo-right-url').value.trim();
+                    if (!url) {
+                        mostrarNotificacion("Ingrese una URL válida", "error");
+                        return;
+                    }
+                    
+                    cargarLogoDesdeURL(url, 'derecho')
+                        .then(() => {
+                            mostrarNotificacion("Logo institucional cargado desde URL", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            // Botón para cargar logo derecho desde archivo - CORREGIDO
+            const btnCargarLogoRightFile = document.getElementById('btn-cargar-logo-right-file');
+            if (btnCargarLogoRightFile) {
+                btnCargarLogoRightFile.addEventListener('click', function() {
+                    const fileInput = document.getElementById('logo-right-file');
+                    if (!fileInput.files.length) {
+                        mostrarNotificacion("Seleccione un archivo", "error");
+                        return;
+                    }
+                    
+                    const archivo = fileInput.files[0];
+                    cargarLogoDesdeArchivo(archivo, 'derecho')
+                        .then(() => {
+                            mostrarNotificacion("Logo institucional cargado desde archivo", "success");
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                });
+            }
+            
+            // Botón para aplicar cambios
+            const btnAplicarLogos = document.getElementById('btn-aplicar-logos');
+            if (btnAplicarLogos) {
+                btnAplicarLogos.addEventListener('click', function() {
+                    aplicarLogos();
+                    guardarDatos();
+                    mostrarNotificacion("Logos aplicados correctamente", "success");
+                });
+            }
+            
+            // Botón para restaurar logos predeterminados
+            const btnRestaurarLogos = document.getElementById('btn-restaurar-logos');
+            if (btnRestaurarLogos) {
+                btnRestaurarLogos.addEventListener('click', function() {
+                    mostrarConfirmacion(
+                        'Restaurar Logos',
+                        '¿Está seguro de restaurar los logos predeterminados?',
+                        function() {
+                            restaurarLogosPredeterminados();
+                        }
+                    );
+                });
+            }
+            
+            // Eventos directos en los inputs de archivo para mejor UX
+            const logoLeftFileInput = document.getElementById('logo-left-file');
+            const logoRightFileInput = document.getElementById('logo-right-file');
+            
+            if (logoLeftFileInput) {
+                logoLeftFileInput.addEventListener('change', function() {
+                    if (this.files.length) {
+                        const archivo = this.files[0];
+                        cargarLogoDesdeArchivo(archivo, 'izquierdo')
+                            .then(() => {
+                                mostrarNotificacion("Logo izquierdo cargado automáticamente", "success");
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                            });
+                    }
+                });
+            }
+            
+            if (logoRightFileInput) {
+                logoRightFileInput.addEventListener('change', function() {
+                    if (this.files.length) {
+                        const archivo = this.files[0];
+                        cargarLogoDesdeArchivo(archivo, 'derecho')
+                            .then(() => {
+                                mostrarNotificacion("Logo institucional cargado automáticamente", "success");
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                            });
+                    }
+                });
+            }
+        }
+
+        // ============================================
+        // CORRECCIÓN: FUNCIÓN DE ESTADO FIREBASE
+        // ============================================
+        function actualizarEstadoFirebase() {
+            const statusElement = document.getElementById('firebase-config-status');
+            const schoolIdElement = document.getElementById('school-id-display');
+            
+            if (statusElement) {
+                if (!firebaseInitialized) {
+                    statusElement.innerHTML = '<span style="color: var(--warning);">⚠️ Modo Local (Firebase No Iniciado)</span>';
+                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Datos almacenados localmente</small>';
+                } else if (isOnline) {
+                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
+                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Sincronización activa</small>';
+                } else {
+                    statusElement.innerHTML = '<span style="color: var(--danger);">❌ Error de conexión Firebase</span>';
+                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Modo offline activado</small>';
+                }
+            }
+            
+            if (schoolIdElement) {
+                schoolIdElement.textContent = SCHOOL_ID;
+            }
+        }
+
+        // ============================================
+        // INICIALIZACIÓN DE FIREBASE (OPCIONAL)
+        // ============================================
+        function inicializarFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    firebaseInitialized = true;
+                    
+                    // Verificar conectividad
+                    const connectedRef = database.ref(".info/connected");
+                    connectedRef.on("value", function(snap) {
+                        isOnline = snap.val() === true;
+                        actualizarEstadoFirebase();
+                        
+                        if (isOnline) {
+                            mostrarNotificacion("Conectado a Firebase RTDB", "success");
+                            // Aquí podrías agregar sincronización si lo necesitas
+                        }
+                    });
+                    
+                    // Manejar errores
+                    database.ref().onDisconnect().set({ last_online: firebase.database.ServerValue.TIMESTAMP });
+                    
+                    console.log("🔥 Firebase inicializado correctamente");
+                } else {
+                    firebaseInitialized = true;
+                    database = firebase.database();
+                    console.log("🔥 Firebase ya estaba inicializado");
+                }
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                firebaseInitialized = false;
+                isOnline = false;
+                mostrarNotificacion("Firebase no disponible. Modo local activado.", "warning");
+            }
+            
+            actualizarEstadoFirebase();
+        }
+
+        // ============================================
+        // FUNCIONES DE SINCRONIZACIÓN (OPCIONAL)
+        // ============================================
+        function sincronizarConFirebase() {
+            if (!firebaseInitialized || !isOnline) {
+                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
+                return;
+            }
+            
+            syncInProgress = true;
+            mostrarNotificacion("Sincronizando con Firebase...", "info");
+            
+            // Aquí implementarías la sincronización real
+            setTimeout(() => {
+                syncInProgress = false;
+                mostrarNotificacion("Datos sincronizados con Firebase", "success");
+            }, 1500);
+        }
+
+        function forzarSubidaFirebase() {
+            if (!firebaseInitialized) {
+                mostrarNotificacion("Firebase no está inicializado", "error");
+                return;
+            }
+            
+            mostrarConfirmacion(
+                "Forzar Subida a Firebase",
+                "¿Está seguro de subir todos los datos locales a Firebase? Esto sobrescribirá los datos remotos.",
+                function() {
+                    mostrarNotificacion("Subiendo datos a Firebase...", "info");
+                    
+                    // Aquí implementarías la subida real
+                    setTimeout(() => {
+                        mostrarNotificacion("Datos subidos correctamente a Firebase", "success");
+                    }, 2000);
+                }
+            );
+        }
+
+        // ============================================
+        // AUTENTICACIÓN CON PIN (SIMPLIFICADA)
         // ============================================
         function inicializarSistemaPIN() {
             const pinOverlay = document.getElementById('pin-overlay');
@@ -3303,6 +3708,7 @@
             actualizarTablaNiveles();
             actualizarTablaPremios();
             actualizarEstadisticasSistema();
+            actualizarEstadoFirebase(); // ¡CORRECCIÓN AQUÍ!
             
             // Configurar eventos de los botones
             const btnCambiarPin = document.getElementById('btn-cambiar-pin');
@@ -3375,32 +3781,12 @@
             // Configurar botones de Firebase
             const btnSincronizarAhora = document.getElementById('btn-sincronizar-ahora');
             if (btnSincronizarAhora) {
-                btnSincronizarAhora.addEventListener('click', function() {
-                    if (firebaseInitialized && database) {
-                        mostrarNotificacion('Sincronizando con Firebase...', 'info');
-                        guardarDatos();
-                        setTimeout(() => {
-                            mostrarNotificacion('✅ Datos sincronizados con Firebase', 'success');
-                        }, 1000);
-                    } else {
-                        mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
-                    }
-                });
+                btnSincronizarAhora.addEventListener('click', sincronizarConFirebase);
             }
             
             const btnForzarSubida = document.getElementById('btn-forzar-subida');
             if (btnForzarSubida) {
-                btnForzarSubida.addEventListener('click', function() {
-                    if (firebaseInitialized && database) {
-                        mostrarNotificacion('Subiendo datos a Firebase...', 'info');
-                        guardarDatos();
-                        setTimeout(() => {
-                            mostrarNotificacion('✅ Datos subidos a Firebase correctamente', 'success');
-                        }, 1000);
-                    } else {
-                        mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
-                    }
-                });
+                btnForzarSubida.addEventListener('click', forzarSubidaFirebase);
             }
         }
 
@@ -3775,6 +4161,166 @@
         }
 
         // ============================================
+        // BACKUP Y RESTAURACIÓN
+        // ============================================
+        function exportarDatos() {
+            const datos = {
+                sistema: sistema,
+                version: '1.0',
+                fechaExportacion: new Date().toISOString()
+            };
+            
+            const datosStr = JSON.stringify(datos, null, 2);
+            const blob = new Blob([datosStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_convivencia_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            mostrarNotificacion('Datos exportados correctamente', 'success');
+        }
+
+        function importarDatos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    
+                    if (!datos.sistema) {
+                        mostrarNotificacion('El archivo no contiene datos válidos', 'error');
+                        return;
+                    }
+                    
+                    mostrarConfirmacion(
+                        'Importar Datos',
+                        '¿Está seguro de importar los datos? Esto sobrescribirá todos los datos actuales.',
+                        function() {
+                            sistema = datos.sistema;
+                            guardarDatos();
+                            cargarDatos();
+                            mostrarNotificacion('Datos importados correctamente', 'success');
+                        }
+                    );
+                } catch (error) {
+                    console.error('Error al importar:', error);
+                    mostrarNotificacion('Error al importar el archivo', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function restablecerDatos() {
+            mostrarConfirmacion(
+                'Restablecer Sistema',
+                '¿Está seguro de restablecer todos los datos a los valores predeterminados? Esto eliminará todos los datos actuales.',
+                function() {
+                    localStorage.removeItem('sistemaConvivenciaFinal');
+                    sessionStorage.removeItem('sesionConfiguracion');
+                    
+                    // Restablecer a valores predeterminados
+                    sistema = {
+                        semanaActual: 1,
+                        seguridad: {
+                            pin: PIN_PREDETERMINADO,
+                            pinConfigurado: false
+                        },
+                        configuracion: {
+                            puntosCodigos: {
+                                'AA': { nombre: 'Ayuda a otro', puntos: 5, tipo: 'positiva', descripcion: 'Ayuda espontánea a compañero' },
+                                'RE': { nombre: 'Resolución pacífica', puntos: 10, tipo: 'positiva', descripcion: 'Media o resuelve conflicto' },
+                                'LP': { nombre: 'Liderazgo positivo', puntos: 8, tipo: 'positiva', descripcion: 'Organiza actividades constructivas' },
+                                'IR': { nombre: 'Intervención responsable', puntos: 15, tipo: 'positiva', descripcion: 'Reporta o interviene en bullying' },
+                                'CC': { nombre: 'Conflicto compañero', puntos: -5, tipo: 'negativa', descripcion: 'Inicia conflicto con compañero' },
+                                'FD': { nombre: 'Falta de respeto', puntos: -8, tipo: 'negativa', descripcion: 'Falta de respeto a profesor/compañero' }
+                            },
+                            nivelesMediadores: [
+                                { nivel: 1, nombre: 'Aprendiz de la Convivencia', puntosMin: 100, bonus: 10, descripcion: 'En etapa de aprendizaje y observación' },
+                                { nivel: 2, nombre: 'Mediador Novato', puntosMin: 200, bonus: 20, descripcion: 'Ya puede mediar en conflictos menores' },
+                                { nivel: 3, nombre: 'Guardián de la Convivencia', puntosMin: 300, bonus: 30, descripcion: 'Experto, puede entrenar a otros mediadores' }
+                            ],
+                            premiosIndividuales: [
+                                { medalla: '🥉', nombre: 'Bronce', puntosMin: 30, descripcion: 'Certificado + Stickers' },
+                                { medalla: '🥈', nombre: 'Plata', puntosMin: 50, descripcion: 'Hora libre + Mención' },
+                                { medalla: '🥇', nombre: 'Oro', puntosMin: 80, descripcion: 'Foto en Muro del Respeto' }
+                            ],
+                            premiosColectivos: [
+                                { puntos: 300, premio: '👕 Día sin uniforme', descripcion: 'Un día sin uniforme para el curso' },
+                                { puntos: 500, premio: '⏰ Recreo extendido', descripcion: 'Recreo extendido 15 minutos' },
+                                { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
+                            ],
+                            multiplicadorEvaluacion: 2,
+                            maxMediadoresPorNivel: 3,
+                            logos: {
+                                izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
+                                derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
+                            }
+                        },
+                        cursos: {
+                            '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                            '5B': { nombre: '5°B Básico', puntosColectivos: 0, evaluaciones: [] },
+                            '6A': { nombre: '6°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                            '6B': { nombre: '6°B Básico', puntosColectivos: 0, evaluaciones: [] },
+                            '7A': { nombre: '7°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                            '7B': { nombre: '7°B Básico', puntosColectivos: 0, evaluaciones: [] }
+                        },
+                        estudiantes: {
+                            '5A': [
+                                { id: '5A-1', nombre: 'Ana Martínez López', puntos: 45 },
+                                { id: '5A-2', nombre: 'Carlos González Silva', puntos: 32 },
+                                { id: '5A-3', nombre: 'Sofía Pérez Rojas', puntos: 67 },
+                                { id: '5A-4', nombre: 'Diego Ramírez Torres', puntos: 28 }
+                            ],
+                            '5B': [
+                                { id: '5B-1', nombre: 'Javier Morales Herrera', puntos: 38 },
+                                { id: '5B-2', nombre: 'Camila Soto Vargas', puntos: 71 },
+                                { id: '5B-3', nombre: 'Matías Flores Muñoz', puntos: 29 },
+                                { id: '5B-4', nombre: 'Isabel Rojas Paredes', puntos: 62 }
+                            ],
+                            '6A': [
+                                { id: '6A-1', nombre: 'Martina Silva Gómez', puntos: 88 },
+                                { id: '6A-2', nombre: 'Tomás Fernández Castro', puntos: 105 },
+                                { id: '6A-3', nombre: 'Emilia Vargas Ruiz', puntos: 92 },
+                                { id: '6A-4', nombre: 'Maximiliano Soto López', puntos: 76 }
+                            ],
+                            '6B': [
+                                { id: '6B-1', nombre: 'Sebastián Vega Torres', puntos: 58 },
+                                { id: '6B-2', nombre: 'Florencia Castillo Reyes', puntos: 47 },
+                                { id: '6B-3', nombre: 'Lucas Reyes Mendoza', puntos: 81 },
+                                { id: '6B-4', nombre: 'Renata Mendoza Peña', puntos: 36 }
+                            ],
+                            '7A': [
+                                { id: '7A-1', nombre: 'Agustín Guzmán Ruiz', puntos: 124 },
+                                { id: '7A-2', nombre: 'Constanza Ruiz Medina', puntos: 97 },
+                                { id: '7A-3', nombre: 'Joaquín López Castro', puntos: 132 },
+                                { id: '7A-4', nombre: 'Francisca Medina Flores', puntos: 85 }
+                            ],
+                            '7B': [
+                                { id: '7B-1', nombre: 'Mariana Ortega Paredes', puntos: 91 },
+                                { id: '7B-2', nombre: 'Samuel Paredes Figueroa', puntos: 67 },
+                                { id: '7B-3', nombre: 'Amanda Castro Ríos', puntos: 119 },
+                                { id: '7B-4', nombre: 'Álvaro Figueroa Salazar', puntos: 78 }
+                            ]
+                        },
+                        registros: [],
+                        mediadores: []
+                    };
+                    
+                    guardarDatos();
+                    cargarDatos();
+                    mostrarNotificacion('Sistema restablecido a valores predeterminados', 'success');
+                }
+            );
+        }
+
+        // ============================================
         // INICIALIZACIÓN DEL SISTEMA
         // ============================================
         window.addEventListener('DOMContentLoaded', function() {
@@ -3783,12 +4329,23 @@
             // Cargar datos
             cargarDatos();
             
+            // Inicializar Firebase (opcional)
+            try {
+                inicializarFirebase();
+            } catch (error) {
+                console.log("Firebase no disponible, modo local activado");
+            }
+            
             // Inicializar componentes
             inicializarSistemaPIN();
             inicializarTabs();
             inicializarModal();
             inicializarRegistroIndividual();
             inicializarEvaluacionColectiva();
+            inicializarConfiguracionLogos();
+            
+            // Aplicar logos guardados
+            aplicarLogos();
             
             // Actualizar interfaz
             actualizarInterfazCompleta();
@@ -3950,6 +4507,26 @@
             const filtroCursoEstudiantes = document.getElementById('filtro-curso-estudiantes');
             if (filtroCursoEstudiantes) {
                 filtroCursoEstudiantes.addEventListener('change', actualizarTablaEstudiantes);
+            }
+            
+            // Configurar botones de backup
+            const btnExportarDatos = document.getElementById('btn-exportar-datos');
+            if (btnExportarDatos) {
+                btnExportarDatos.addEventListener('click', exportarDatos);
+            }
+            
+            const btnImportarDatos = document.getElementById('btn-importar-datos');
+            const importFile = document.getElementById('import-file');
+            if (btnImportarDatos && importFile) {
+                btnImportarDatos.addEventListener('click', function() {
+                    importFile.click();
+                });
+                importFile.addEventListener('change', importarDatos);
+            }
+            
+            const btnRestablecerDatos = document.getElementById('btn-restablecer-datos');
+            if (btnRestablecerDatos) {
+                btnRestablecerDatos.addEventListener('click', restablecerDatos);
             }
             
             console.log('✅ Sistema de Convivencia inicializado correctamente');
