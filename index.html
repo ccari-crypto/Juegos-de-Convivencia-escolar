@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Convivencia - Versión Final RTDB Sincronizada</title>
+    <title>Sistema Convivencia - Versión Final RTDB</title>
     
     <!-- Firebase SDK para RTDB -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -878,40 +878,6 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
         }
-
-        /* Estilos para configuración de logos */
-        .logo-preview-container {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 20px 0;
-        }
-
-        .logo-preview {
-            text-align: center;
-        }
-
-        .logo-preview-img {
-            width: 100px;
-            height: 100px;
-            object-fit: contain;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px;
-            border: 2px solid #ddd;
-        }
-
-        .logo-config-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .logo-config-section {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -959,10 +925,10 @@
         <header>
             <div class="header-logos">
                 <div class="logo-left">
-                    <img id="logo-left-img" src="https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO" alt="Logo Izquierdo">
+                    <img src="https://github.com/ccari-crypto/Juegos-de-Convivencia-escolar/blob/main/JDH.png?raw=true" alt="Logo Izquierdo">
                 </div>
                 <div class="logo-right">
-                    <img id="logo-right-img" src="https://via.placeholder.com/80x80/3498db/ffffff?text=INST" alt="Logo Institucional">
+                    <img src="https://github.com/ccari-crypto/Juegos-de-Convivencia-escolar/blob/main/Logo%20NSM.png?raw=true" alt="Logo Institucional">
                 </div>
             </div>
             <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🏆 Juegos de Convivencia Escolar</h1>
@@ -1374,12 +1340,11 @@
                 <div class="form-group">
                     <h4 style="margin-bottom: 15px; color: var(--secondary);">🔥 Configuración Firebase RTDB</h4>
                     <div style="padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid var(--warning);">
-                        <p><strong>Estado Firebase:</strong> <span id="firebase-config-status">Modo Local (Firebase No Iniciado)</span></p>
+                        <p><strong>Estado Firebase:</strong> <span id="firebase-config-status">Verificando...</span></p>
                         <p><small>ID de Escuela: <strong id="school-id-display">escuela_default</strong></small></p>
                         <div style="margin-top: 10px;">
                             <button id="btn-sincronizar-ahora" class="btn-small">🔄 Sincronizar Ahora</button>
                             <button id="btn-forzar-subida" class="btn-small btn-secondary">📤 Forzar Subida</button>
-                            <button id="btn-forzar-descarga" class="btn-small btn-warning">📥 Forzar Descarga</button>
                         </div>
                     </div>
                 </div>
@@ -1391,7 +1356,6 @@
                 <div class="config-tab" data-config-tab="puntos">🎯 Puntos y Códigos</div>
                 <div class="config-tab" data-config-tab="mediadores">🏆 Mediadores</div>
                 <div class="config-tab" data-config-tab="premios">🏅 Premios</div>
-                <div class="config-tab" data-config-tab="logos">🖼️ Logos</div>
                 <div class="config-tab" data-config-tab="backup">💾 Backup</div>
             </div>
             
@@ -1585,79 +1549,6 @@
                 </div>
             </div>
             
-            <!-- NUEVA SECCIÓN: CONFIGURACIÓN DE LOGOS -->
-            <div class="config-tab-content" id="config-logos">
-                <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary);">🖼️ Configuración de Logos</h3>
-                    
-                    <div class="logo-preview-container">
-                        <div class="logo-preview">
-                            <h4 style="color: var(--secondary); margin-bottom: 10px;">Logo Izquierdo</h4>
-                            <img id="logo-left-preview" src="https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO" alt="Logo Izquierdo" class="logo-preview-img">
-                            <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">Actual</p>
-                        </div>
-                        <div class="logo-preview">
-                            <h4 style="color: var(--secondary); margin-bottom: 10px;">Logo Institucional</h4>
-                            <img id="logo-right-preview" src="https://via.placeholder.com/80x80/3498db/ffffff?text=INST" alt="Logo Institucional" class="logo-preview-img">
-                            <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">Actual</p>
-                        </div>
-                    </div>
-                    
-                    <div class="logo-config-section">
-                        <div class="form-group">
-                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Logo Izquierdo</h4>
-                            
-                            <div class="input-group">
-                                <input type="text" id="logo-left-url" placeholder="URL de la imagen (https://...)" style="flex: 2;">
-                                <button id="btn-cargar-logo-left-url" class="btn-small" style="flex: 1;">🌐 Cargar desde URL</button>
-                            </div>
-                            
-                            <div style="margin: 15px 0;">
-                                <label style="display: block; margin-bottom: 10px;">O cargar desde archivo:</label>
-                                <input type="file" id="logo-left-file" accept="image/*" style="margin-bottom: 10px;">
-                                <button id="btn-cargar-logo-left-file" class="btn-small">📁 Cargar Archivo</button>
-                            </div>
-                            
-                            <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;">
-                                <small><strong>Dimensiones recomendadas:</strong> 80x80 píxeles</small><br>
-                                <small><strong>Formatos soportados:</strong> PNG, JPG, SVG</small>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <h4 style="margin-bottom: 15px; color: var(--secondary);">Logo Institucional</h4>
-                            
-                            <div class="input-group">
-                                <input type="text" id="logo-right-url" placeholder="URL de la imagen (https://...)" style="flex: 2;">
-                                <button id="btn-cargar-logo-right-url" class="btn-small" style="flex: 1;">🌐 Cargar desde URL</button>
-                            </div>
-                            
-                            <div style="margin: 15px 0;">
-                                <label style="display: block; margin-bottom: 10px;">O cargar desde archivo:</label>
-                                <input type="file" id="logo-right-file" accept="image/*" style="margin-bottom: 10px;">
-                                <button id="btn-cargar-logo-right-file" class="btn-small">📁 Cargar Archivo</button>
-                            </div>
-                            
-                            <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-top: 10px;">
-                                <small><strong>Dimensiones recomendadas:</strong> 80x80 píxeles</small><br>
-                                <small><strong>Formatos soportados:</strong> PNG, JPG, SVG</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons" style="margin-top: 30px; justify-content: center;">
-                        <button id="btn-restaurar-logos" class="btn-warning">🔄 Restaurar Logos Predeterminados</button>
-                        <button id="btn-aplicar-logos" class="btn-secondary">💾 Aplicar Cambios</button>
-                    </div>
-                    
-                    <div style="margin-top: 25px; padding: 15px; background: #e8f6f3; border-radius: 8px;">
-                        <h4 style="color: var(--success); margin-bottom: 10px;">💡 Información</h4>
-                        <p><strong>Los logos se mostrarán en la cabecera de la aplicación.</strong></p>
-                        <p><small>Puede usar URLs de imágenes públicas o cargar archivos desde su computadora. Las imágenes se guardarán localmente en su navegador.</small></p>
-                    </div>
-                </div>
-            </div>
-            
             <div class="config-tab-content" id="config-backup">
                 <div class="card">
                     <h3 style="margin-bottom: 20px; color: var(--primary);">💾 Backup y Restauración</h3>
@@ -1712,7 +1603,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN FIREBASE
+        // CONFIGURACIÓN FIREBASE (SIMPLIFICADA PARA PRUEBAS)
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1G0UGc2iHVH-db7HNLI8T9u7Y1aqSD44",
@@ -1730,7 +1621,6 @@
         let firebaseInitialized = false;
         let isOnline = false;
         let syncInProgress = false;
-        let isSyncing = false;
 
         // ============================================
         // CONFIGURACIÓN DEL SISTEMA
@@ -1770,11 +1660,7 @@
                     { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
                 ],
                 multiplicadorEvaluacion: 2,
-                maxMediadoresPorNivel: 3,
-                logos: {
-                    izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
-                    derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
-                }
+                maxMediadoresPorNivel: 3
             },
             cursos: {
                 '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
@@ -1855,14 +1741,8 @@
                     if (datos.estudiantes) sistema.estudiantes = datos.estudiantes;
                     if (datos.registros) sistema.registros = datos.registros;
                     if (datos.semanaActual) sistema.semanaActual = datos.semanaActual;
-                    if (datos.mediadores) sistema.mediadores = datos.mediadores;
                     
                     console.log("📂 Datos cargados de localStorage");
-                    
-                    // Aplicar logos guardados
-                    if (sistema.configuracion.logos) {
-                        aplicarLogos();
-                    }
                 } catch (error) {
                     console.error("Error al cargar datos:", error);
                     mostrarNotificacion("Error al cargar datos guardados", "error");
@@ -1882,302 +1762,7 @@
         }
 
         // ============================================
-        // FUNCIONES DE SINCRONIZACIÓN CON FIREBASE
-        // ============================================
-        async function sincronizarConFirebase() {
-            if (!firebaseInitialized || !isOnline) {
-                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
-                return;
-            }
-            
-            if (isSyncing) {
-                mostrarNotificacion("Ya hay una sincronización en curso", "warning");
-                return;
-            }
-            
-            isSyncing = true;
-            mostrarNotificacion("🔄 Sincronizando con Firebase...", "info");
-            
-            try {
-                // Subir todos los datos a Firebase
-                await database.ref(`${SCHOOL_ID}/sistema`).set(sistema);
-                await database.ref(`${SCHOOL_ID}/ultimaActualizacion`).set(new Date().toISOString());
-                
-                mostrarNotificacion("✅ Datos sincronizados con Firebase", "success");
-                console.log("✅ Datos sincronizados con Firebase");
-            } catch (error) {
-                console.error("Error al sincronizar con Firebase:", error);
-                mostrarNotificacion("❌ Error al sincronizar con Firebase", "error");
-            } finally {
-                isSyncing = false;
-            }
-        }
-
-        async function descargarDatosFirebase() {
-            if (!firebaseInitialized || !isOnline) {
-                mostrarNotificacion("No hay conexión a Firebase disponible", "error");
-                return;
-            }
-            
-            mostrarNotificacion("📥 Descargando datos de Firebase...", "info");
-            
-            try {
-                const snapshot = await database.ref(`${SCHOOL_ID}/sistema`).once('value');
-                const datosRemotos = snapshot.val();
-                
-                if (datosRemotos) {
-                    mostrarConfirmacion(
-                        "Descargar Datos Remotos",
-                        "¿Desea sobrescribir los datos locales con los datos de Firebase?",
-                        function() {
-                            sistema = datosRemotos;
-                            guardarDatos();
-                            cargarDatos();
-                            mostrarNotificacion("✅ Datos descargados de Firebase", "success");
-                        }
-                    );
-                } else {
-                    mostrarNotificacion("No hay datos en Firebase", "warning");
-                }
-            } catch (error) {
-                console.error("Error al descargar datos:", error);
-                mostrarNotificacion("❌ Error al descargar datos de Firebase", "error");
-            }
-        }
-
-        function forzarSubidaFirebase() {
-            if (!firebaseInitialized) {
-                mostrarNotificacion("Firebase no está inicializado", "error");
-                return;
-            }
-            
-            mostrarConfirmacion(
-                "Forzar Subida a Firebase",
-                "¿Está seguro de subir todos los datos locales a Firebase? Esto sobrescribirá los datos remotos.",
-                async function() {
-                    mostrarNotificacion("📤 Subiendo datos a Firebase...", "info");
-                    
-                    try {
-                        await database.ref(`${SCHOOL_ID}/sistema`).set(sistema);
-                        await database.ref(`${SCHOOL_ID}/ultimaActualizacion`).set(new Date().toISOString());
-                        
-                        mostrarNotificacion("✅ Datos subidos correctamente a Firebase", "success");
-                    } catch (error) {
-                        console.error("Error al subir datos:", error);
-                        mostrarNotificacion("❌ Error al subir datos a Firebase", "error");
-                    }
-                }
-            );
-        }
-
-        function iniciarEscuchaFirebase() {
-            if (!firebaseInitialized || !isOnline) {
-                console.log("No se puede iniciar escucha Firebase: no conectado");
-                return;
-            }
-            
-            console.log("👂 Iniciando escucha de cambios en Firebase...");
-            
-            // Escuchar cambios en los datos
-            database.ref(`${SCHOOL_ID}/sistema`).on('value', (snapshot) => {
-                const datosRemotos = snapshot.val();
-                
-                if (datosRemotos && !isSyncing) {
-                    console.log("🔄 Cambios detectados en Firebase");
-                    
-                    // Comparar marcas de tiempo para evitar bucles
-                    const ultimaActualizacionLocal = localStorage.getItem('ultimaActualizacionLocal');
-                    const ultimaActualizacionRemota = datosRemotos.ultimaActualizacion;
-                    
-                    if (ultimaActualizacionLocal !== ultimaActualizacionRemota) {
-                        mostrarConfirmacion(
-                            "Actualización Disponible",
-                            "Hay cambios nuevos en Firebase. ¿Desea actualizar los datos locales?",
-                            function() {
-                                sistema = datosRemotos;
-                                guardarDatos();
-                                cargarDatos();
-                                localStorage.setItem('ultimaActualizacionLocal', ultimaActualizacionRemota);
-                                mostrarNotificacion("✅ Datos actualizados desde Firebase", "success");
-                            }
-                        );
-                    }
-                }
-            });
-        }
-
-        // ============================================
-        // FUNCIONES PARA LOGOS
-        // ============================================
-        function aplicarLogos() {
-            const logoLeftImg = document.getElementById('logo-left-img');
-            const logoRightImg = document.getElementById('logo-right-img');
-            const logoLeftPreview = document.getElementById('logo-left-preview');
-            const logoRightPreview = document.getElementById('logo-right-preview');
-            
-            if (sistema.configuracion.logos) {
-                if (logoLeftImg && sistema.configuracion.logos.izquierdo) {
-                    logoLeftImg.src = sistema.configuracion.logos.izquierdo;
-                }
-                if (logoRightImg && sistema.configuracion.logos.derecho) {
-                    logoRightImg.src = sistema.configuracion.logos.derecho;
-                }
-                if (logoLeftPreview && sistema.configuracion.logos.izquierdo) {
-                    logoLeftPreview.src = sistema.configuracion.logos.izquierdo;
-                }
-                if (logoRightPreview && sistema.configuracion.logos.derecho) {
-                    logoRightPreview.src = sistema.configuracion.logos.derecho;
-                }
-            }
-        }
-
-        function cargarLogoDesdeURL(url, tipo) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = function() {
-                    // Verificar dimensiones (opcional)
-                    if (this.width > 500 || this.height > 500) {
-                        mostrarNotificacion("La imagen es muy grande. Se recomienda 80x80 píxeles", "warning");
-                    }
-                    
-                    sistema.configuracion.logos[tipo] = url;
-                    
-                    // Actualizar previsualización
-                    const preview = document.getElementById(`logo-${tipo}-preview`);
-                    if (preview) {
-                        preview.src = url;
-                    }
-                    
-                    resolve(url);
-                };
-                img.onerror = function() {
-                    mostrarNotificacion("No se pudo cargar la imagen desde la URL", "error");
-                    reject(new Error("Error al cargar imagen"));
-                };
-                img.src = url;
-            });
-        }
-
-        function cargarLogoDesdeArchivo(archivo, tipo) {
-            return new Promise((resolve, reject) => {
-                if (!archivo.type.match('image.*')) {
-                    mostrarNotificacion("Por favor, seleccione un archivo de imagen", "error");
-                    reject(new Error("No es un archivo de imagen"));
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Image = e.target.result;
-                    
-                    sistema.configuracion.logos[tipo] = base64Image;
-                    
-                    // Actualizar previsualización
-                    const preview = document.getElementById(`logo-${tipo}-preview`);
-                    if (preview) {
-                        preview.src = base64Image;
-                    }
-                    
-                    // Actualizar también los logos principales
-                    if (tipo === 'izquierdo') {
-                        document.getElementById('logo-left-img').src = base64Image;
-                    } else {
-                        document.getElementById('logo-right-img').src = base64Image;
-                    }
-                    
-                    resolve(base64Image);
-                };
-                reader.onerror = function() {
-                    mostrarNotificacion("Error al leer el archivo", "error");
-                    reject(new Error("Error al leer archivo"));
-                };
-                reader.readAsDataURL(archivo);
-            });
-        }
-
-        function restaurarLogosPredeterminados() {
-            sistema.configuracion.logos = {
-                izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
-                derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
-            };
-            
-            aplicarLogos();
-            guardarDatos();
-            
-            // Limpiar campos de entrada
-            document.getElementById('logo-left-url').value = '';
-            document.getElementById('logo-right-url').value = '';
-            
-            mostrarNotificacion("Logos restaurados a los valores predeterminados", "success");
-        }
-
-        // ============================================
-        // CORRECCIÓN: FUNCIÓN DE ESTADO FIREBASE
-        // ============================================
-        function actualizarEstadoFirebase() {
-            const statusElement = document.getElementById('firebase-config-status');
-            const schoolIdElement = document.getElementById('school-id-display');
-            
-            if (statusElement) {
-                if (!firebaseInitialized) {
-                    statusElement.innerHTML = '<span style="color: var(--warning);">⚠️ Modo Local (Firebase No Iniciado)</span>';
-                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Datos almacenados localmente</small>';
-                } else if (isOnline) {
-                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
-                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Sincronización activa</small>';
-                } else {
-                    statusElement.innerHTML = '<span style="color: var(--danger);">❌ Error de conexión Firebase</span>';
-                    statusElement.innerHTML += '<br><small style="color: #7f8c8d;">Modo offline activado</small>';
-                }
-            }
-            
-            if (schoolIdElement) {
-                schoolIdElement.textContent = SCHOOL_ID;
-            }
-        }
-
-        // ============================================
-        // INICIALIZACIÓN DE FIREBASE
-        // ============================================
-        function inicializarFirebase() {
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    firebaseInitialized = true;
-                    
-                    // Verificar conectividad
-                    const connectedRef = database.ref(".info/connected");
-                    connectedRef.on("value", function(snap) {
-                        isOnline = snap.val() === true;
-                        actualizarEstadoFirebase();
-                        
-                        if (isOnline) {
-                            mostrarNotificacion("✅ Conectado a Firebase RTDB", "success");
-                            iniciarEscuchaFirebase();
-                        } else {
-                            mostrarNotificacion("⚠️ Sin conexión a Firebase", "warning");
-                        }
-                    });
-                    
-                    console.log("🔥 Firebase inicializado correctamente");
-                } else {
-                    firebaseInitialized = true;
-                    database = firebase.database();
-                    console.log("🔥 Firebase ya estaba inicializado");
-                }
-            } catch (error) {
-                console.error("Error al inicializar Firebase:", error);
-                firebaseInitialized = false;
-                isOnline = false;
-                mostrarNotificacion("Firebase no disponible. Modo local activado.", "warning");
-            }
-            
-            actualizarEstadoFirebase();
-        }
-
-        // ============================================
-        // AUTENTICACIÓN CON PIN
+        // AUTENTICACIÓN CON PIN (SIMPLIFICADA)
         // ============================================
         function inicializarSistemaPIN() {
             const pinOverlay = document.getElementById('pin-overlay');
@@ -2485,7 +2070,6 @@
                         if (inputNombre && inputNombre.value.trim() !== curso.nombre) {
                             curso.nombre = inputNombre.value.trim();
                             guardarDatos();
-                            sincronizarConFirebase();
                             actualizarListaCursos();
                             actualizarInterfazCompleta();
                             mostrarNotificacion(`Curso ${codigo} actualizado`);
@@ -2541,7 +2125,6 @@
             sistema.mediadores = sistema.mediadores.filter(mediador => mediador.curso !== codigo);
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarListaCursos();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
@@ -2651,7 +2234,6 @@
                     if (inputPuntos) estudiante.puntos = parseInt(inputPuntos.value) || 0;
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarMediadores();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Estudiante ${estudiante.nombre} actualizado`);
@@ -2691,7 +2273,6 @@
                     sistema.mediadores = sistema.mediadores.filter(mediador => mediador.id !== id);
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaEstudiantes();
                     actualizarInterfazCompleta();
                     actualizarRankingCursos();
@@ -2874,7 +2455,6 @@
             actualizarMediadores();
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
             
@@ -2964,7 +2544,6 @@
             sistema.cursos[cursoId].puntosColectivos += evaluacion.puntos;
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarInterfazCompleta();
             actualizarRankingCursos();
             
@@ -3025,7 +2604,7 @@
         }
 
         // ============================================
-        // RANKING DE CURSOS
+        // RANKING DE CURSOS - ACTUALIZADO SIN PUNTOS INDIVIDUALES
         // ============================================
         function actualizarRankingCursos() {
             // Calcular estadísticas
@@ -3660,7 +3239,74 @@
             actualizarTablaNiveles();
             actualizarTablaPremios();
             actualizarEstadisticasSistema();
-            actualizarEstadoFirebase();
+            
+            // Configurar eventos de los botones
+            const btnCambiarPin = document.getElementById('btn-cambiar-pin');
+            if (btnCambiarPin) {
+                btnCambiarPin.addEventListener('click', function() {
+                    const nuevoPin1 = document.getElementById('nuevo-pin-1').value;
+                    const nuevoPin2 = document.getElementById('nuevo-pin-2').value;
+                    
+                    if (!nuevoPin1 || !nuevoPin2) {
+                        mostrarNotificacion('Complete ambos campos del PIN', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1.length !== 4) {
+                        mostrarNotificacion('El PIN debe tener exactamente 4 dígitos', 'error');
+                        return;
+                    }
+                    
+                    if (!/^\d{4}$/.test(nuevoPin1)) {
+                        mostrarNotificacion('El PIN solo puede contener números', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1 !== nuevoPin2) {
+                        mostrarNotificacion('Los PIN no coinciden', 'error');
+                        return;
+                    }
+                    
+                    if (nuevoPin1 === sistema.seguridad.pin) {
+                        mostrarNotificacion('El nuevo PIN no puede ser igual al actual', 'error');
+                        return;
+                    }
+                    
+                    sistema.seguridad.pin = nuevoPin1;
+                    sistema.seguridad.pinConfigurado = true;
+                    
+                    guardarDatos();
+                    actualizarEstadoSesion();
+                    
+                    document.getElementById('nuevo-pin-1').value = '';
+                    document.getElementById('nuevo-pin-2').value = '';
+                    
+                    mostrarNotificacion('✅ PIN cambiado correctamente', 'success');
+                });
+            }
+            
+            const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+            if (btnCerrarSesion) {
+                btnCerrarSesion.addEventListener('click', function() {
+                    mostrarConfirmacion(
+                        'Cerrar Sesión',
+                        '¿Está seguro de cerrar la sesión de configuración? Deberá ingresar el PIN nuevamente para acceder.',
+                        function() {
+                            autenticado = false;
+                            sesionIniciada = null;
+                            sessionStorage.removeItem('sesionConfiguracion');
+                            document.getElementById('config-tab').classList.add('disabled');
+                            
+                            if (document.querySelector('.tab.active').getAttribute('data-tab') === 'config') {
+                                document.querySelector('.tab[data-tab="registro"]').click();
+                            }
+                            
+                            document.getElementById('pin-overlay').classList.remove('hidden');
+                            mostrarNotificacion('Sesión de configuración cerrada', 'info');
+                        }
+                    );
+                });
+            }
         }
 
         function actualizarTablaCodigos() {
@@ -3712,6 +3358,22 @@
             
             if (multEvaluacion) multEvaluacion.value = sistema.configuracion.multiplicadorEvaluacion;
             if (maxMediadoresNivel) maxMediadoresNivel.value = sistema.configuracion.maxMediadoresPorNivel;
+            
+            const btnGuardarConfigPuntos = document.getElementById('btn-guardar-config-puntos');
+            if (btnGuardarConfigPuntos) {
+                btnGuardarConfigPuntos.addEventListener('click', function() {
+                    const multiplicador = parseFloat(document.getElementById('mult-evaluacion').value) || 2;
+                    const maxMediadores = parseInt(document.getElementById('max-mediadores-nivel').value) || 3;
+                    
+                    sistema.configuracion.multiplicadorEvaluacion = multiplicador;
+                    sistema.configuracion.maxMediadoresPorNivel = maxMediadores;
+                    
+                    guardarDatos();
+                    actualizarInterfazCompleta();
+                    
+                    mostrarNotificacion('Configuración de puntos guardada');
+                });
+            }
         }
 
         function guardarCodigo(codigo) {
@@ -3729,7 +3391,6 @@
             if (inputDesc) config.descripcion = inputDesc.value.trim();
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarContenidoRegistro();
             mostrarNotificacion(`Código ${codigo} actualizado`);
         }
@@ -3744,7 +3405,6 @@
                 function() {
                     delete sistema.configuracion.puntosCodigos[codigo];
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaCodigos();
                     actualizarContenidoRegistro();
                     mostrarNotificacion(`Código ${codigo} eliminado`, 'warning');
@@ -3808,7 +3468,6 @@
             sistema.configuracion.nivelesMediadores.sort((a, b) => a.puntosMin - b.puntosMin);
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarMediadores();
             actualizarInterfazCompleta();
             mostrarNotificacion(`Nivel actualizado`);
@@ -3824,7 +3483,6 @@
                 function() {
                     sistema.configuracion.nivelesMediadores.splice(index, 1);
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaNiveles();
                     actualizarMediadores();
                     actualizarInterfazCompleta();
@@ -3923,7 +3581,6 @@
             sistema.configuracion.premiosIndividuales.sort((a, b) => a.puntosMin - b.puntosMin);
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarContenidoInformacion();
             mostrarNotificacion('Premio individual actualizado');
         }
@@ -3938,7 +3595,6 @@
                 function() {
                     sistema.configuracion.premiosIndividuales.splice(index, 1);
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio eliminado', 'warning');
@@ -3962,7 +3618,6 @@
             sistema.configuracion.premiosColectivos.sort((a, b) => a.puntos - b.puntos);
             
             guardarDatos();
-            sincronizarConFirebase();
             actualizarContenidoInformacion();
             mostrarNotificacion('Premio colectivo actualizado');
         }
@@ -3977,7 +3632,6 @@
                 function() {
                     sistema.configuracion.premiosColectivos.splice(index, 1);
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio eliminado', 'warning');
@@ -4026,168 +3680,6 @@
         }
 
         // ============================================
-        // BACKUP Y RESTAURACIÓN
-        // ============================================
-        function exportarDatos() {
-            const datos = {
-                sistema: sistema,
-                version: '1.0',
-                fechaExportacion: new Date().toISOString()
-            };
-            
-            const datosStr = JSON.stringify(datos, null, 2);
-            const blob = new Blob([datosStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_convivencia_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            mostrarNotificacion('Datos exportados correctamente', 'success');
-        }
-
-        function importarDatos(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const datos = JSON.parse(e.target.result);
-                    
-                    if (!datos.sistema) {
-                        mostrarNotificacion('El archivo no contiene datos válidos', 'error');
-                        return;
-                    }
-                    
-                    mostrarConfirmacion(
-                        'Importar Datos',
-                        '¿Está seguro de importar los datos? Esto sobrescribirá todos los datos actuales.',
-                        function() {
-                            sistema = datos.sistema;
-                            guardarDatos();
-                            sincronizarConFirebase();
-                            cargarDatos();
-                            mostrarNotificacion('Datos importados correctamente', 'success');
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error al importar:', error);
-                    mostrarNotificacion('Error al importar el archivo', 'error');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function restablecerDatos() {
-            mostrarConfirmacion(
-                'Restablecer Sistema',
-                '¿Está seguro de restablecer todos los datos a los valores predeterminados? Esto eliminará todos los datos actuales.',
-                function() {
-                    localStorage.removeItem('sistemaConvivenciaFinal');
-                    sessionStorage.removeItem('sesionConfiguracion');
-                    
-                    // Restablecer a valores predeterminados
-                    sistema = {
-                        semanaActual: 1,
-                        seguridad: {
-                            pin: PIN_PREDETERMINADO,
-                            pinConfigurado: false
-                        },
-                        configuracion: {
-                            puntosCodigos: {
-                                'AA': { nombre: 'Ayuda a otro', puntos: 5, tipo: 'positiva', descripcion: 'Ayuda espontánea a compañero' },
-                                'RE': { nombre: 'Resolución pacífica', puntos: 10, tipo: 'positiva', descripcion: 'Media o resuelve conflicto' },
-                                'LP': { nombre: 'Liderazgo positivo', puntos: 8, tipo: 'positiva', descripcion: 'Organiza actividades constructivas' },
-                                'IR': { nombre: 'Intervención responsable', puntos: 15, tipo: 'positiva', descripcion: 'Reporta o interviene en bullying' },
-                                'CC': { nombre: 'Conflicto compañero', puntos: -5, tipo: 'negativa', descripcion: 'Inicia conflicto con compañero' },
-                                'FD': { nombre: 'Falta de respeto', puntos: -8, tipo: 'negativa', descripcion: 'Falta de respeto a profesor/compañero' }
-                            },
-                            nivelesMediadores: [
-                                { nivel: 1, nombre: 'Aprendiz de la Convivencia', puntosMin: 100, bonus: 10, descripcion: 'En etapa de aprendizaje y observación' },
-                                { nivel: 2, nombre: 'Mediador Novato', puntosMin: 200, bonus: 20, descripcion: 'Ya puede mediar en conflictos menores' },
-                                { nivel: 3, nombre: 'Guardián de la Convivencia', puntosMin: 300, bonus: 30, descripcion: 'Experto, puede entrenar a otros mediadores' }
-                            ],
-                            premiosIndividuales: [
-                                { medalla: '🥉', nombre: 'Bronce', puntosMin: 30, descripcion: 'Certificado + Stickers' },
-                                { medalla: '🥈', nombre: 'Plata', puntosMin: 50, descripcion: 'Hora libre + Mención' },
-                                { medalla: '🥇', nombre: 'Oro', puntosMin: 80, descripcion: 'Foto en Muro del Respeto' }
-                            ],
-                            premiosColectivos: [
-                                { puntos: 300, premio: '👕 Día sin uniforme', descripcion: 'Un día sin uniforme para el curso' },
-                                { puntos: 500, premio: '⏰ Recreo extendido', descripcion: 'Recreo extendido 15 minutos' },
-                                { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
-                            ],
-                            multiplicadorEvaluacion: 2,
-                            maxMediadoresPorNivel: 3,
-                            logos: {
-                                izquierdo: "https://via.placeholder.com/80x80/2c3e50/ffffff?text=LOGO",
-                                derecho: "https://via.placeholder.com/80x80/3498db/ffffff?text=INST"
-                            }
-                        },
-                        cursos: {
-                            '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                            '5B': { nombre: '5°B Básico', puntosColectivos: 0, evaluaciones: [] },
-                            '6A': { nombre: '6°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                            '6B': { nombre: '6°B Básico', puntosColectivos: 0, evaluaciones: [] },
-                            '7A': { nombre: '7°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                            '7B': { nombre: '7°B Básico', puntosColectivos: 0, evaluaciones: [] }
-                        },
-                        estudiantes: {
-                            '5A': [
-                                { id: '5A-1', nombre: 'Ana Martínez López', puntos: 45 },
-                                { id: '5A-2', nombre: 'Carlos González Silva', puntos: 32 },
-                                { id: '5A-3', nombre: 'Sofía Pérez Rojas', puntos: 67 },
-                                { id: '5A-4', nombre: 'Diego Ramírez Torres', puntos: 28 }
-                            ],
-                            '5B': [
-                                { id: '5B-1', nombre: 'Javier Morales Herrera', puntos: 38 },
-                                { id: '5B-2', nombre: 'Camila Soto Vargas', puntos: 71 },
-                                { id: '5B-3', nombre: 'Matías Flores Muñoz', puntos: 29 },
-                                { id: '5B-4', nombre: 'Isabel Rojas Paredes', puntos: 62 }
-                            ],
-                            '6A': [
-                                { id: '6A-1', nombre: 'Martina Silva Gómez', puntos: 88 },
-                                { id: '6A-2', nombre: 'Tomás Fernández Castro', puntos: 105 },
-                                { id: '6A-3', nombre: 'Emilia Vargas Ruiz', puntos: 92 },
-                                { id: '6A-4', nombre: 'Maximiliano Soto López', puntos: 76 }
-                            ],
-                            '6B': [
-                                { id: '6B-1', nombre: 'Sebastián Vega Torres', puntos: 58 },
-                                { id: '6B-2', nombre: 'Florencia Castillo Reyes', puntos: 47 },
-                                { id: '6B-3', nombre: 'Lucas Reyes Mendoza', puntos: 81 },
-                                { id: '6B-4', nombre: 'Renata Mendoza Peña', puntos: 36 }
-                            ],
-                            '7A': [
-                                { id: '7A-1', nombre: 'Agustín Guzmán Ruiz', puntos: 124 },
-                                { id: '7A-2', nombre: 'Constanza Ruiz Medina', puntos: 97 },
-                                { id: '7A-3', nombre: 'Joaquín López Castro', puntos: 132 },
-                                { id: '7A-4', nombre: 'Francisca Medina Flores', puntos: 85 }
-                            ],
-                            '7B': [
-                                { id: '7B-1', nombre: 'Mariana Ortega Paredes', puntos: 91 },
-                                { id: '7B-2', nombre: 'Samuel Paredes Figueroa', puntos: 67 },
-                                { id: '7B-3', nombre: 'Amanda Castro Ríos', puntos: 119 },
-                                { id: '7B-4', nombre: 'Álvaro Figueroa Salazar', puntos: 78 }
-                            ]
-                        },
-                        registros: [],
-                        mediadores: []
-                    };
-                    
-                    guardarDatos();
-                    sincronizarConFirebase();
-                    cargarDatos();
-                    mostrarNotificacion('Sistema restablecido a valores predeterminados', 'success');
-                }
-            );
-        }
-
-        // ============================================
         // INICIALIZACIÓN DEL SISTEMA
         // ============================================
         window.addEventListener('DOMContentLoaded', function() {
@@ -4196,9 +3688,6 @@
             // Cargar datos
             cargarDatos();
             
-            // Inicializar Firebase
-            inicializarFirebase();
-            
             // Inicializar componentes
             inicializarSistemaPIN();
             inicializarTabs();
@@ -4206,90 +3695,8 @@
             inicializarRegistroIndividual();
             inicializarEvaluacionColectiva();
             
-            // Configurar eventos de configuración
-            const btnCambiarPin = document.getElementById('btn-cambiar-pin');
-            if (btnCambiarPin) {
-                btnCambiarPin.addEventListener('click', function() {
-                    const nuevoPin1 = document.getElementById('nuevo-pin-1').value;
-                    const nuevoPin2 = document.getElementById('nuevo-pin-2').value;
-                    
-                    if (!nuevoPin1 || !nuevoPin2) {
-                        mostrarNotificacion('Complete ambos campos del PIN', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1.length !== 4) {
-                        mostrarNotificacion('El PIN debe tener exactamente 4 dígitos', 'error');
-                        return;
-                    }
-                    
-                    if (!/^\d{4}$/.test(nuevoPin1)) {
-                        mostrarNotificacion('El PIN solo puede contener números', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1 !== nuevoPin2) {
-                        mostrarNotificacion('Los PIN no coinciden', 'error');
-                        return;
-                    }
-                    
-                    if (nuevoPin1 === sistema.seguridad.pin) {
-                        mostrarNotificacion('El nuevo PIN no puede ser igual al actual', 'error');
-                        return;
-                    }
-                    
-                    sistema.seguridad.pin = nuevoPin1;
-                    sistema.seguridad.pinConfigurado = true;
-                    
-                    guardarDatos();
-                    sincronizarConFirebase();
-                    actualizarEstadoSesion();
-                    
-                    document.getElementById('nuevo-pin-1').value = '';
-                    document.getElementById('nuevo-pin-2').value = '';
-                    
-                    mostrarNotificacion('✅ PIN cambiado correctamente', 'success');
-                });
-            }
-            
-            const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
-            if (btnCerrarSesion) {
-                btnCerrarSesion.addEventListener('click', function() {
-                    mostrarConfirmacion(
-                        'Cerrar Sesión',
-                        '¿Está seguro de cerrar la sesión de configuración? Deberá ingresar el PIN nuevamente para acceder.',
-                        function() {
-                            autenticado = false;
-                            sesionIniciada = null;
-                            sessionStorage.removeItem('sesionConfiguracion');
-                            document.getElementById('config-tab').classList.add('disabled');
-                            
-                            if (document.querySelector('.tab.active').getAttribute('data-tab') === 'config') {
-                                document.querySelector('.tab[data-tab="registro"]').click();
-                            }
-                            
-                            document.getElementById('pin-overlay').classList.remove('hidden');
-                            mostrarNotificacion('Sesión de configuración cerrada', 'info');
-                        }
-                    );
-                });
-            }
-            
-            // Configurar botones de Firebase
-            const btnSincronizarAhora = document.getElementById('btn-sincronizar-ahora');
-            if (btnSincronizarAhora) {
-                btnSincronizarAhora.addEventListener('click', sincronizarConFirebase);
-            }
-            
-            const btnForzarSubida = document.getElementById('btn-forzar-subida');
-            if (btnForzarSubida) {
-                btnForzarSubida.addEventListener('click', forzarSubidaFirebase);
-            }
-            
-            const btnForzarDescarga = document.getElementById('btn-forzar-descarga');
-            if (btnForzarDescarga) {
-                btnForzarDescarga.addEventListener('click', descargarDatosFirebase);
-            }
+            // Actualizar interfaz
+            actualizarInterfazCompleta();
             
             // Configurar botón de actualizar ranking
             const btnActualizarRanking = document.getElementById('btn-actualizar-ranking');
@@ -4329,7 +3736,6 @@
                     document.getElementById('nuevo-curso-nombre').value = '';
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Curso ${nombre} agregado correctamente`);
                 });
@@ -4360,7 +3766,6 @@
                     document.getElementById('nuevo-estudiante-nombre').value = '';
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Estudiante ${nombre} agregado al curso ${codigoCurso}`);
                 });
@@ -4408,7 +3813,6 @@
                     };
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarInterfazCompleta();
                     mostrarNotificacion(`Código ${codigo} agregado`);
                 });
@@ -4425,7 +3829,6 @@
                     });
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio individual agregado');
@@ -4442,27 +3845,9 @@
                     });
                     
                     guardarDatos();
-                    sincronizarConFirebase();
                     actualizarTablaPremios();
                     actualizarContenidoInformacion();
                     mostrarNotificacion('Premio colectivo agregado');
-                });
-            }
-            
-            const btnGuardarConfigPuntos = document.getElementById('btn-guardar-config-puntos');
-            if (btnGuardarConfigPuntos) {
-                btnGuardarConfigPuntos.addEventListener('click', function() {
-                    const multiplicador = parseFloat(document.getElementById('mult-evaluacion').value) || 2;
-                    const maxMediadores = parseInt(document.getElementById('max-mediadores-nivel').value) || 3;
-                    
-                    sistema.configuracion.multiplicadorEvaluacion = multiplicador;
-                    sistema.configuracion.maxMediadoresPorNivel = maxMediadores;
-                    
-                    guardarDatos();
-                    sincronizarConFirebase();
-                    actualizarInterfazCompleta();
-                    
-                    mostrarNotificacion('Configuración de puntos guardada');
                 });
             }
             
@@ -4470,128 +3855,6 @@
             const filtroCursoEstudiantes = document.getElementById('filtro-curso-estudiantes');
             if (filtroCursoEstudiantes) {
                 filtroCursoEstudiantes.addEventListener('change', actualizarTablaEstudiantes);
-            }
-            
-            // Configurar botones de backup
-            const btnExportarDatos = document.getElementById('btn-exportar-datos');
-            if (btnExportarDatos) {
-                btnExportarDatos.addEventListener('click', exportarDatos);
-            }
-            
-            const btnImportarDatos = document.getElementById('btn-importar-datos');
-            const importFile = document.getElementById('import-file');
-            if (btnImportarDatos && importFile) {
-                btnImportarDatos.addEventListener('click', function() {
-                    importFile.click();
-                });
-                importFile.addEventListener('change', importarDatos);
-            }
-            
-            const btnRestablecerDatos = document.getElementById('btn-restablecer-datos');
-            if (btnRestablecerDatos) {
-                btnRestablecerDatos.addEventListener('click', restablecerDatos);
-            }
-            
-            // Configurar logos
-            const btnCargarLogoLeftURL = document.getElementById('btn-cargar-logo-left-url');
-            if (btnCargarLogoLeftURL) {
-                btnCargarLogoLeftURL.addEventListener('click', function() {
-                    const url = document.getElementById('logo-left-url').value.trim();
-                    if (!url) {
-                        mostrarNotificacion("Ingrese una URL válida", "error");
-                        return;
-                    }
-                    
-                    cargarLogoDesdeURL(url, 'izquierdo')
-                        .then(() => {
-                            mostrarNotificacion("Logo izquierdo cargado desde URL", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            const btnCargarLogoLeftFile = document.getElementById('btn-cargar-logo-left-file');
-            if (btnCargarLogoLeftFile) {
-                btnCargarLogoLeftFile.addEventListener('click', function() {
-                    const fileInput = document.getElementById('logo-left-file');
-                    if (!fileInput.files.length) {
-                        mostrarNotificacion("Seleccione un archivo", "error");
-                        return;
-                    }
-                    
-                    const archivo = fileInput.files[0];
-                    cargarLogoDesdeArchivo(archivo, 'izquierdo')
-                        .then(() => {
-                            mostrarNotificacion("Logo izquierdo cargado desde archivo", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            const btnCargarLogoRightURL = document.getElementById('btn-cargar-logo-right-url');
-            if (btnCargarLogoRightURL) {
-                btnCargarLogoRightURL.addEventListener('click', function() {
-                    const url = document.getElementById('logo-right-url').value.trim();
-                    if (!url) {
-                        mostrarNotificacion("Ingrese una URL válida", "error");
-                        return;
-                    }
-                    
-                    cargarLogoDesdeURL(url, 'derecho')
-                        .then(() => {
-                            mostrarNotificacion("Logo institucional cargado desde URL", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            const btnCargarLogoRightFile = document.getElementById('btn-cargar-logo-right-file');
-            if (btnCargarLogoRightFile) {
-                btnCargarLogoRightFile.addEventListener('click', function() {
-                    const fileInput = document.getElementById('logo-right-file');
-                    if (!fileInput.files.length) {
-                        mostrarNotificacion("Seleccione un archivo", "error");
-                        return;
-                    }
-                    
-                    const archivo = fileInput.files[0];
-                    cargarLogoDesdeArchivo(archivo, 'derecho')
-                        .then(() => {
-                            mostrarNotificacion("Logo institucional cargado desde archivo", "success");
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                        });
-                });
-            }
-            
-            const btnAplicarLogos = document.getElementById('btn-aplicar-logos');
-            if (btnAplicarLogos) {
-                btnAplicarLogos.addEventListener('click', function() {
-                    aplicarLogos();
-                    guardarDatos();
-                    sincronizarConFirebase();
-                    mostrarNotificacion("Logos aplicados correctamente", "success");
-                });
-            }
-            
-            const btnRestaurarLogos = document.getElementById('btn-restaurar-logos');
-            if (btnRestaurarLogos) {
-                btnRestaurarLogos.addEventListener('click', function() {
-                    mostrarConfirmacion(
-                        'Restaurar Logos',
-                        '¿Está seguro de restaurar los logos predeterminados?',
-                        function() {
-                            restaurarLogosPredeterminados();
-                        }
-                    );
-                });
             }
             
             console.log('✅ Sistema de Convivencia inicializado correctamente');
