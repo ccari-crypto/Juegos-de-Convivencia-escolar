@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Convivencia - Versión Final RTDB</title>
+    <title>Sistema Convivencia - Versión Final RTDB Sincronizado</title>
     
     <!-- Firebase SDK para RTDB -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1345,6 +1345,7 @@
                         <div style="margin-top: 10px;">
                             <button id="btn-sincronizar-ahora" class="btn-small">🔄 Sincronizar Ahora</button>
                             <button id="btn-forzar-subida" class="btn-small btn-secondary">📤 Forzar Subida</button>
+                            <button id="btn-sincronizar-descarga" class="btn-small btn-warning">📥 Descargar de Firebase</button>
                         </div>
                     </div>
                 </div>
@@ -1603,7 +1604,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN FIREBASE (CORREGIDA Y SIMPLIFICADA)
+        // CONFIGURACIÓN FIREBASE (CORREGIDA PARA SINCRONIZACIÓN REAL)
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1G0UGc2iHVH-db7HNLI8T9u7Y1aqSD44",
@@ -1617,152 +1618,13 @@
 
         const SCHOOL_ID = "escuela_default";
 
-        // Intentar inicializar Firebase
-        let firebaseInitialized = false;
+        // Variables globales
         let database = null;
-
-        try {
-            // Inicializar Firebase
-            if (firebase.apps.length === 0) {
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                firebaseInitialized = true;
-                console.log("✅ Firebase inicializado correctamente");
-                
-                // Actualizar estado en la interfaz
-                updateFirebaseStatus(true);
-            }
-        } catch (error) {
-            console.warn("⚠️ No se pudo inicializar Firebase, usando modo offline:", error);
-            updateFirebaseStatus(false, error.message);
-        }
-
-        function updateFirebaseStatus(connected, errorMessage = "") {
-            const statusElement = document.getElementById('firebase-config-status');
-            if (statusElement) {
-                if (connected) {
-                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
-                    
-                    // Crear indicador de estado si no existe
-                    let statusIndicator = document.querySelector('.firebase-status');
-                    if (!statusIndicator) {
-                        statusIndicator = document.createElement('div');
-                        statusIndicator.className = 'firebase-status firebase-online';
-                        statusIndicator.innerHTML = `
-                            <div class="sync-indicator sync-active"></div>
-                            <span>Conectado a Firebase</span>
-                        `;
-                        document.body.appendChild(statusIndicator);
-                    }
-                } else {
-                    if (errorMessage) {
-                        statusElement.innerHTML = `<span style="color: var(--warning);">⚠️ Modo offline: ${errorMessage}</span>`;
-                    } else {
-                        statusElement.innerHTML = '<span style="color: var(--warning);">⚠️ Modo offline - Usando almacenamiento local</span>';
-                    }
-                    
-                    // Actualizar o crear indicador de estado
-                    let statusIndicator = document.querySelector('.firebase-status');
-                    if (statusIndicator) {
-                        statusIndicator.className = 'firebase-status firebase-offline';
-                        statusIndicator.innerHTML = `
-                            <div class="sync-indicator sync-inactive"></div>
-                            <span>Modo offline</span>
-                        `;
-                    }
-                }
-            }
-        }
-
-        // ============================================
-        // CONFIGURACIÓN DEL SISTEMA
-        // ============================================
+        let firebaseInitialized = false;
+        let sistema = {};
         let autenticado = false;
         let sesionIniciada = null;
         const PIN_PREDETERMINADO = '1234';
-
-        let sistema = {
-            semanaActual: 1,
-            seguridad: {
-                pin: PIN_PREDETERMINADO,
-                pinConfigurado: false
-            },
-            configuracion: {
-                puntosCodigos: {
-                    'AA': { nombre: 'Ayuda a otro', puntos: 5, tipo: 'positiva', descripcion: 'Ayuda espontánea a compañero' },
-                    'RE': { nombre: 'Resolución pacífica', puntos: 10, tipo: 'positiva', descripcion: 'Media o resuelve conflicto' },
-                    'LP': { nombre: 'Liderazgo positivo', puntos: 8, tipo: 'positiva', descripcion: 'Organiza actividades constructivas' },
-                    'IR': { nombre: 'Intervención responsable', puntos: 15, tipo: 'positiva', descripcion: 'Reporta o interviene en bullying' },
-                    'CC': { nombre: 'Conflicto compañero', puntos: -5, tipo: 'negativa', descripcion: 'Inicia conflicto con compañero' },
-                    'FD': { nombre: 'Falta de respeto', puntos: -8, tipo: 'negativa', descripcion: 'Falta de respeto a profesor/compañero' }
-                },
-                nivelesMediadores: [
-                    { nivel: 1, nombre: 'Aprendiz de la Convivencia', puntosMin: 100, bonus: 10, descripcion: 'En etapa de aprendizaje y observación' },
-                    { nivel: 2, nombre: 'Mediador Novato', puntosMin: 200, bonus: 20, descripcion: 'Ya puede mediar en conflictos menores' },
-                    { nivel: 3, nombre: 'Guardián de la Convivencia', puntosMin: 300, bonus: 30, descripcion: 'Experto, puede entrenar a otros mediadores' }
-                ],
-                premiosIndividuales: [
-                    { medalla: '🥉', nombre: 'Bronce', puntosMin: 30, descripcion: 'Certificado + Stickers' },
-                    { medalla: '🥈', nombre: 'Plata', puntosMin: 50, descripcion: 'Hora libre + Mención' },
-                    { medalla: '🥇', nombre: 'Oro', puntosMin: 80, descripcion: 'Foto en Muro del Respeto' }
-                ],
-                premiosColectivos: [
-                    { puntos: 300, premio: '👕 Día sin uniforme', descripcion: 'Un día sin uniforme para el curso' },
-                    { puntos: 500, premio: '⏰ Recreo extendido', descripcion: 'Recreo extendido 15 minutos' },
-                    { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
-                ],
-                multiplicadorEvaluacion: 2,
-                maxMediadoresPorNivel: 3
-            },
-            cursos: {
-                '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                '5B': { nombre: '5°B Básico', puntosColectivos: 0, evaluaciones: [] },
-                '6A': { nombre: '6°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                '6B': { nombre: '6°B Básico', puntosColectivos: 0, evaluaciones: [] },
-                '7A': { nombre: '7°A Básico', puntosColectivos: 0, evaluaciones: [] },
-                '7B': { nombre: '7°B Básico', puntosColectivos: 0, evaluaciones: [] }
-            },
-            estudiantes: {
-                '5A': [
-                    { id: '5A-1', nombre: 'Ana Martínez López', puntos: 45 },
-                    { id: '5A-2', nombre: 'Carlos González Silva', puntos: 32 },
-                    { id: '5A-3', nombre: 'Sofía Pérez Rojas', puntos: 67 },
-                    { id: '5A-4', nombre: 'Diego Ramírez Torres', puntos: 28 }
-                ],
-                '5B': [
-                    { id: '5B-1', nombre: 'Javier Morales Herrera', puntos: 38 },
-                    { id: '5B-2', nombre: 'Camila Soto Vargas', puntos: 71 },
-                    { id: '5B-3', nombre: 'Matías Flores Muñoz', puntos: 29 },
-                    { id: '5B-4', nombre: 'Isabel Rojas Paredes', puntos: 62 }
-                ],
-                '6A': [
-                    { id: '6A-1', nombre: 'Martina Silva Gómez', puntos: 88 },
-                    { id: '6A-2', nombre: 'Tomás Fernández Castro', puntos: 105 },
-                    { id: '6A-3', nombre: 'Emilia Vargas Ruiz', puntos: 92 },
-                    { id: '6A-4', nombre: 'Maximiliano Soto López', puntos: 76 }
-                ],
-                '6B': [
-                    { id: '6B-1', nombre: 'Sebastián Vega Torres', puntos: 58 },
-                    { id: '6B-2', nombre: 'Florencia Castillo Reyes', puntos: 47 },
-                    { id: '6B-3', nombre: 'Lucas Reyes Mendoza', puntos: 81 },
-                    { id: '6B-4', nombre: 'Renata Mendoza Peña', puntos: 36 }
-                ],
-                '7A': [
-                    { id: '7A-1', nombre: 'Agustín Guzmán Ruiz', puntos: 124 },
-                    { id: '7A-2', nombre: 'Constanza Ruiz Medina', puntos: 97 },
-                    { id: '7A-3', nombre: 'Joaquín López Castro', puntos: 132 },
-                    { id: '7A-4', nombre: 'Francisca Medina Flores', puntos: 85 }
-                ],
-                '7B': [
-                    { id: '7B-1', nombre: 'Mariana Ortega Paredes', puntos: 91 },
-                    { id: '7B-2', nombre: 'Samuel Paredes Figueroa', puntos: 67 },
-                    { id: '7B-3', nombre: 'Amanda Castro Ríos', puntos: 119 },
-                    { id: '7B-4', nombre: 'Álvaro Figueroa Salazar', puntos: 78 }
-                ]
-            },
-            registros: [],
-            mediadores: []
-        };
 
         // ============================================
         // FUNCIONES DE UTILIDAD
@@ -1780,49 +1642,303 @@
             }, 3000);
         }
 
-        function cargarDatos() {
+        function actualizarEstadoFirebase(conectado, mensaje = "") {
+            const statusElement = document.getElementById('firebase-config-status');
+            if (statusElement) {
+                if (conectado) {
+                    statusElement.innerHTML = '<span style="color: var(--success);">✅ Conectado a Firebase RTDB</span>';
+                    
+                    // Crear o actualizar indicador de estado
+                    let statusIndicator = document.querySelector('.firebase-status');
+                    if (!statusIndicator) {
+                        statusIndicator = document.createElement('div');
+                        statusIndicator.className = 'firebase-status firebase-online';
+                        statusIndicator.innerHTML = `
+                            <div class="sync-indicator sync-active"></div>
+                            <span>Conectado a Firebase</span>
+                        `;
+                        document.body.appendChild(statusIndicator);
+                    } else {
+                        statusIndicator.className = 'firebase-status firebase-online';
+                        statusIndicator.innerHTML = `
+                            <div class="sync-indicator sync-active"></div>
+                            <span>Conectado a Firebase</span>
+                        `;
+                    }
+                } else {
+                    statusElement.innerHTML = `<span style="color: var(--warning);">⚠️ Modo offline: ${mensaje}</span>`;
+                    
+                    let statusIndicator = document.querySelector('.firebase-status');
+                    if (statusIndicator) {
+                        statusIndicator.className = 'firebase-status firebase-offline';
+                        statusIndicator.innerHTML = `
+                            <div class="sync-indicator sync-inactive"></div>
+                            <span>Modo offline</span>
+                        `;
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // SINCRONIZACIÓN CON FIREBASE (CORREGIDA)
+        // ============================================
+        async function inicializarFirebase() {
+            try {
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    firebaseInitialized = true;
+                    console.log("✅ Firebase inicializado correctamente");
+                    
+                    // Configurar listeners para sincronización en tiempo real
+                    configurarListenersFirebase();
+                    
+                    actualizarEstadoFirebase(true);
+                    
+                    // Cargar datos desde Firebase
+                    await cargarDatosFirebase();
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.error("❌ Error al inicializar Firebase:", error);
+                actualizarEstadoFirebase(false, error.message);
+                
+                // Cargar datos locales como fallback
+                cargarDatosLocales();
+                return false;
+            }
+        }
+
+        function configurarListenersFirebase() {
+            if (!database) return;
+            
+            // Escuchar cambios en tiempo real en Firebase
+            const escuelaRef = database.ref(SCHOOL_ID);
+            
+            escuelaRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const datosRemotos = snapshot.val();
+                    
+                    // Solo actualizar si los datos son diferentes
+                    if (JSON.stringify(sistema) !== JSON.stringify(datosRemotos)) {
+                        console.log("🔄 Datos recibidos de Firebase (sincronización en tiempo real)");
+                        
+                        // Actualizar sistema con datos de Firebase
+                        sistema = datosRemotos;
+                        
+                        // Actualizar interfaz
+                        actualizarInterfazCompleta();
+                        
+                        // Guardar localmente como backup
+                        guardarDatosLocales();
+                        
+                        mostrarNotificacion("Datos sincronizados desde Firebase", "info");
+                    }
+                }
+            }, (error) => {
+                console.error("Error en listener de Firebase:", error);
+            });
+            
+            // Escuchar cambios en la conexión
+            const connectedRef = database.ref(".info/connected");
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    actualizarEstadoFirebase(true);
+                } else {
+                    actualizarEstadoFirebase(false, "Sin conexión");
+                }
+            });
+        }
+
+        async function cargarDatosFirebase() {
+            if (!database) {
+                cargarDatosLocales();
+                return;
+            }
+            
+            try {
+                const escuelaRef = database.ref(SCHOOL_ID);
+                const snapshot = await escuelaRef.once('value');
+                
+                if (snapshot.exists()) {
+                    const datosRemotos = snapshot.val();
+                    
+                    // Usar datos de Firebase
+                    sistema = datosRemotos;
+                    console.log("📂 Datos cargados desde Firebase");
+                    
+                    // Guardar localmente como backup
+                    guardarDatosLocales();
+                    
+                    mostrarNotificacion("Datos cargados desde Firebase", "success");
+                } else {
+                    // Si no hay datos en Firebase, crear estructura inicial
+                    inicializarSistema();
+                    guardarDatosFirebase();
+                    mostrarNotificacion("Sistema inicializado en Firebase", "info");
+                }
+            } catch (error) {
+                console.error("Error al cargar datos de Firebase:", error);
+                
+                // Cargar datos locales como fallback
+                cargarDatosLocales();
+                mostrarNotificacion("Usando datos locales (modo offline)", "warning");
+            }
+        }
+
+        function guardarDatosFirebase() {
+            if (!database || !firebaseInitialized) {
+                console.warn("⚠️ Firebase no disponible, guardando solo localmente");
+                guardarDatosLocales();
+                return;
+            }
+            
+            try {
+                const escuelaRef = database.ref(SCHOOL_ID);
+                escuelaRef.set(sistema)
+                    .then(() => {
+                        console.log("✅ Datos guardados en Firebase");
+                        
+                        // También guardar localmente como backup
+                        guardarDatosLocales();
+                    })
+                    .catch((error) => {
+                        console.error("❌ Error al guardar en Firebase:", error);
+                        
+                        // Guardar localmente como fallback
+                        guardarDatosLocales();
+                        mostrarNotificacion("Error al guardar en Firebase. Datos guardados localmente.", "warning");
+                    });
+            } catch (error) {
+                console.error("Error en guardarDatosFirebase:", error);
+                guardarDatosLocales();
+            }
+        }
+
+        // ============================================
+        // ALMACENAMIENTO LOCAL (BACKUP)
+        // ============================================
+        function cargarDatosLocales() {
             const datosGuardados = localStorage.getItem('sistemaConvivenciaFinal');
             if (datosGuardados) {
                 try {
                     const datos = JSON.parse(datosGuardados);
                     
-                    // Mezclar datos cargados con valores predeterminados
-                    if (datos.seguridad) sistema.seguridad = datos.seguridad;
-                    if (datos.configuracion) sistema.configuracion = datos.configuracion;
-                    if (datos.cursos) sistema.cursos = datos.cursos;
-                    if (datos.estudiantes) sistema.estudiantes = datos.estudiantes;
-                    if (datos.registros) sistema.registros = datos.registros;
-                    if (datos.semanaActual) sistema.semanaActual = datos.semanaActual;
-                    
-                    console.log("📂 Datos cargados de localStorage");
+                    // Si el sistema ya tiene datos de Firebase, no sobreescribir
+                    if (Object.keys(sistema).length === 0) {
+                        sistema = datos;
+                        console.log("📂 Datos cargados de localStorage");
+                    }
                 } catch (error) {
-                    console.error("Error al cargar datos:", error);
-                    mostrarNotificacion("Error al cargar datos guardados", "error");
+                    console.error("Error al cargar datos locales:", error);
+                    inicializarSistema();
                 }
+            } else {
+                inicializarSistema();
             }
-            
-            actualizarInterfazCompleta();
+        }
+
+        function guardarDatosLocales() {
+            try {
+                localStorage.setItem('sistemaConvivenciaFinal', JSON.stringify(sistema));
+            } catch (error) {
+                console.error("Error al guardar datos locales:", error);
+            }
         }
 
         function guardarDatos() {
-            try {
-                localStorage.setItem('sistemaConvivenciaFinal', JSON.stringify(sistema));
-                
-                // Intentar guardar en Firebase si está disponible
-                if (firebaseInitialized && database) {
-                    const escuelaRef = database.ref(SCHOOL_ID);
-                    escuelaRef.set(sistema)
-                        .then(() => {
-                            console.log("✅ Datos guardados en Firebase");
-                        })
-                        .catch((error) => {
-                            console.warn("⚠️ Error al guardar en Firebase:", error);
-                        });
-                }
-            } catch (error) {
-                console.error("Error al guardar datos:", error);
-                mostrarNotificacion("Error al guardar datos", "error");
-            }
+            // Guardar en Firebase (principal) y localmente (backup)
+            guardarDatosFirebase();
+        }
+
+        // ============================================
+        // INICIALIZACIÓN DEL SISTEMA
+        // ============================================
+        function inicializarSistema() {
+            sistema = {
+                semanaActual: 1,
+                seguridad: {
+                    pin: PIN_PREDETERMINADO,
+                    pinConfigurado: false
+                },
+                configuracion: {
+                    puntosCodigos: {
+                        'AA': { nombre: 'Ayuda a otro', puntos: 5, tipo: 'positiva', descripcion: 'Ayuda espontánea a compañero' },
+                        'RE': { nombre: 'Resolución pacífica', puntos: 10, tipo: 'positiva', descripcion: 'Media o resuelve conflicto' },
+                        'LP': { nombre: 'Liderazgo positivo', puntos: 8, tipo: 'positiva', descripcion: 'Organiza actividades constructivas' },
+                        'IR': { nombre: 'Intervención responsable', puntos: 15, tipo: 'positiva', descripcion: 'Reporta o interviene en bullying' },
+                        'CC': { nombre: 'Conflicto compañero', puntos: -5, tipo: 'negativa', descripcion: 'Inicia conflicto con compañero' },
+                        'FD': { nombre: 'Falta de respeto', puntos: -8, tipo: 'negativa', descripcion: 'Falta de respeto a profesor/compañero' }
+                    },
+                    nivelesMediadores: [
+                        { nivel: 1, nombre: 'Aprendiz de la Convivencia', puntosMin: 100, bonus: 10, descripcion: 'En etapa de aprendizaje y observación' },
+                        { nivel: 2, nombre: 'Mediador Novato', puntosMin: 200, bonus: 20, descripcion: 'Ya puede mediar en conflictos menores' },
+                        { nivel: 3, nombre: 'Guardián de la Convivencia', puntosMin: 300, bonus: 30, descripcion: 'Experto, puede entrenar a otros mediadores' }
+                    ],
+                    premiosIndividuales: [
+                        { medalla: '🥉', nombre: 'Bronce', puntosMin: 30, descripcion: 'Certificado + Stickers' },
+                        { medalla: '🥈', nombre: 'Plata', puntosMin: 50, descripcion: 'Hora libre + Mención' },
+                        { medalla: '🥇', nombre: 'Oro', puntosMin: 80, descripcion: 'Foto en Muro del Respeto' }
+                    ],
+                    premiosColectivos: [
+                        { puntos: 300, premio: '👕 Día sin uniforme', descripcion: 'Un día sin uniforme para el curso' },
+                        { puntos: 500, premio: '⏰ Recreo extendido', descripcion: 'Recreo extendido 15 minutos' },
+                        { puntos: 700, premio: '🎉 Actividad especial', descripcion: 'Actividad especial organizada' }
+                    ],
+                    multiplicadorEvaluacion: 2,
+                    maxMediadoresPorNivel: 3
+                },
+                cursos: {
+                    '5A': { nombre: '5°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                    '5B': { nombre: '5°B Básico', puntosColectivos: 0, evaluaciones: [] },
+                    '6A': { nombre: '6°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                    '6B': { nombre: '6°B Básico', puntosColectivos: 0, evaluaciones: [] },
+                    '7A': { nombre: '7°A Básico', puntosColectivos: 0, evaluaciones: [] },
+                    '7B': { nombre: '7°B Básico', puntosColectivos: 0, evaluaciones: [] }
+                },
+                estudiantes: {
+                    '5A': [
+                        { id: '5A-1', nombre: 'Ana Martínez López', puntos: 45 },
+                        { id: '5A-2', nombre: 'Carlos González Silva', puntos: 32 },
+                        { id: '5A-3', nombre: 'Sofía Pérez Rojas', puntos: 67 },
+                        { id: '5A-4', nombre: 'Diego Ramírez Torres', puntos: 28 }
+                    ],
+                    '5B': [
+                        { id: '5B-1', nombre: 'Javier Morales Herrera', puntos: 38 },
+                        { id: '5B-2', nombre: 'Camila Soto Vargas', puntos: 71 },
+                        { id: '5B-3', nombre: 'Matías Flores Muñoz', puntos: 29 },
+                        { id: '5B-4', nombre: 'Isabel Rojas Paredes', puntos: 62 }
+                    ],
+                    '6A': [
+                        { id: '6A-1', nombre: 'Martina Silva Gómez', puntos: 88 },
+                        { id: '6A-2', nombre: 'Tomás Fernández Castro', puntos: 105 },
+                        { id: '6A-3', nombre: 'Emilia Vargas Ruiz', puntos: 92 },
+                        { id: '6A-4', nombre: 'Maximiliano Soto López', puntos: 76 }
+                    ],
+                    '6B': [
+                        { id: '6B-1', nombre: 'Sebastián Vega Torres', puntos: 58 },
+                        { id: '6B-2', nombre: 'Florencia Castillo Reyes', puntos: 47 },
+                        { id: '6B-3', nombre: 'Lucas Reyes Mendoza', puntos: 81 },
+                        { id: '6B-4', nombre: 'Renata Mendoza Peña', puntos: 36 }
+                    ],
+                    '7A': [
+                        { id: '7A-1', nombre: 'Agustín Guzmán Ruiz', puntos: 124 },
+                        { id: '7A-2', nombre: 'Constanza Ruiz Medina', puntos: 97 },
+                        { id: '7A-3', nombre: 'Joaquín López Castro', puntos: 132 },
+                        { id: '7A-4', nombre: 'Francisca Medina Flores', puntos: 85 }
+                    ],
+                    '7B': [
+                        { id: '7B-1', nombre: 'Mariana Ortega Paredes', puntos: 91 },
+                        { id: '7B-2', nombre: 'Samuel Paredes Figueroa', puntos: 67 },
+                        { id: '7B-3', nombre: 'Amanda Castro Ríos', puntos: 119 },
+                        { id: '7B-4', nombre: 'Álvaro Figueroa Salazar', puntos: 78 }
+                    ]
+                },
+                registros: [],
+                mediadores: []
+            };
         }
 
         // ============================================
@@ -2668,7 +2784,7 @@
         }
 
         // ============================================
-        // RANKING DE CURSOS - ACTUALIZADO SIN PUNTOS INDIVIDUALES
+        // RANKING DE CURSOS
         // ============================================
         function actualizarRankingCursos() {
             // Calcular estadísticas
@@ -2845,9 +2961,6 @@
             });
         }
 
-        // ============================================
-        // FUNCIÓN NUEVA: CURSOS GANADORES DE PREMIOS
-        // ============================================
         function actualizarCursosPremiados(cursosArray) {
             const container = document.getElementById('cursos-premiados-container');
             const sinPremiosMsg = document.getElementById('sin-premios-msg');
@@ -3393,10 +3506,24 @@
                 btnForzarSubida.addEventListener('click', function() {
                     if (firebaseInitialized && database) {
                         mostrarNotificacion('Subiendo datos a Firebase...', 'info');
-                        guardarDatos();
+                        guardarDatosFirebase();
                         setTimeout(() => {
                             mostrarNotificacion('✅ Datos subidos a Firebase correctamente', 'success');
                         }, 1000);
+                    } else {
+                        mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
+                    }
+                });
+            }
+            
+            const btnSincronizarDescarga = document.getElementById('btn-sincronizar-descarga');
+            if (btnSincronizarDescarga) {
+                btnSincronizarDescarga.addEventListener('click', async function() {
+                    if (firebaseInitialized && database) {
+                        mostrarNotificacion('Descargando datos de Firebase...', 'info');
+                        await cargarDatosFirebase();
+                        mostrarNotificacion('✅ Datos descargados de Firebase', 'success');
+                        actualizarInterfazCompleta();
                     } else {
                         mostrarNotificacion('Firebase no está disponible. Modo offline activado.', 'warning');
                     }
@@ -3775,25 +3902,25 @@
         }
 
         // ============================================
-        // INICIALIZACIÓN DEL SISTEMA
+        // INICIALIZACIÓN COMPLETA DEL SISTEMA
         // ============================================
-        window.addEventListener('DOMContentLoaded', function() {
+        async function inicializarSistemaCompleto() {
             console.log('🚀 Inicializando Sistema de Convivencia...');
             
-            // Cargar datos
-            cargarDatos();
+            // 1. Inicializar Firebase
+            await inicializarFirebase();
             
-            // Inicializar componentes
+            // 2. Inicializar componentes de interfaz
             inicializarSistemaPIN();
             inicializarTabs();
             inicializarModal();
             inicializarRegistroIndividual();
             inicializarEvaluacionColectiva();
             
-            // Actualizar interfaz
+            // 3. Actualizar interfaz
             actualizarInterfazCompleta();
             
-            // Configurar botón de actualizar ranking
+            // 4. Configurar botones adicionales
             const btnActualizarRanking = document.getElementById('btn-actualizar-ranking');
             if (btnActualizarRanking) {
                 btnActualizarRanking.addEventListener('click', function() {
@@ -3802,7 +3929,14 @@
                 });
             }
             
-            // Configurar eventos de configuración
+            // 5. Configurar eventos de configuración
+            configurarEventosConfiguracion();
+            
+            console.log('✅ Sistema de Convivencia inicializado correctamente');
+            mostrarNotificacion('Sistema listo para usar', 'info');
+        }
+
+        function configurarEventosConfiguracion() {
             const btnAgregarCurso = document.getElementById('btn-agregar-curso');
             if (btnAgregarCurso) {
                 btnAgregarCurso.addEventListener('click', function() {
@@ -3951,10 +4085,10 @@
             if (filtroCursoEstudiantes) {
                 filtroCursoEstudiantes.addEventListener('change', actualizarTablaEstudiantes);
             }
-            
-            console.log('✅ Sistema de Convivencia inicializado correctamente');
-            mostrarNotificacion('Sistema listo para usar', 'info');
-        });
+        }
+
+        // Inicializar el sistema cuando el DOM esté listo
+        window.addEventListener('DOMContentLoaded', inicializarSistemaCompleto);
     </script>
 </body>
 </html>
